@@ -1,0 +1,25 @@
+{
+  "name": "finlogicos",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local-first financial intelligence platform",
+  "workspaces": [
+    "packages/*",
+    "packages/models/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "dev": "turbo run dev"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.0",
+    "jest": "^29.7.0",
+    "eslint": "^8.56.0",
+    "prettier": "^3.2.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

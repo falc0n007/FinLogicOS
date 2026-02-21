@@ -1,0 +1,20 @@
+{
+  "name": "create-finlogic-model",
+  "version": "0.1.0",
+  "description": "Scaffolding CLI for FinLogicOS financial models",
+  "main": "src/index.js",
+  "bin": {
+    "create-finlogic-model": "./src/index.js"
+  },
+  "scripts": {
+    "test": "echo 'Scaffolding tool: manual testing'"
+  },
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "inquirer": "^8.2.6",
+    "js-yaml": "^4.1.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
