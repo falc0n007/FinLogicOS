@@ -1,17 +1,14 @@
 import { IconInvestment } from '../icons/IconInvestment.jsx';
 import { IconDebt } from '../icons/IconDebt.jsx';
-import { IconTax } from '../icons/IconTax.jsx';
 
 const CATEGORY_ICONS = {
   investment: IconInvestment,
   debt: IconDebt,
-  tax: IconTax,
 };
 
 const CATEGORY_LABELS = {
   investment: 'Investment',
   debt: 'Debt',
-  tax: 'Tax',
 };
 
 export default function ModelCard({ model, onSelect }) {

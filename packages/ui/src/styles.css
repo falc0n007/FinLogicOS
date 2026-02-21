@@ -19,7 +19,6 @@
 
   --color-investment:   #10b981;
   --color-debt:         #f59e0b;
-  --color-tax:          #8b5cf6;
 
   --color-error:        #ef4444;
   --color-error-bg:     rgba(239, 68, 68, 0.1);
@@ -250,12 +249,6 @@ input, select, textarea {
   border: 1px solid rgba(245, 158, 11, 0.2);
 }
 
-.model-card-badge--tax {
-  background: rgba(139, 92, 246, 0.12);
-  color: var(--color-tax);
-  border: 1px solid rgba(139, 92, 246, 0.2);
-}
-
 .model-card-body {
   flex: 1;
 }
@@ -474,6 +467,76 @@ input, select, textarea {
   font-weight: 500;
 }
 
+/* Compound interest — minimal form */
+.compound-interest-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.compound-interest-row {
+  display: grid;
+  gap: var(--spacing-md);
+  align-items: end;
+}
+
+.compound-interest-row--main {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.compound-interest-row--optional {
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--color-border);
+}
+
+.compound-interest-optional-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-dim);
+}
+
+.compound-interest-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.compound-interest-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.compound-interest-input,
+.compound-interest-select {
+  min-width: 0;
+}
+
+.compound-interest-error {
+  font-size: 0.75rem;
+  color: var(--color-error);
+  font-weight: 500;
+}
+
+@media (max-width: 640px) {
+  .compound-interest-row--main {
+    grid-template-columns: 1fr;
+  }
+
+  .compound-interest-row--optional {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+  }
+
+  .compound-interest-optional-label {
+    grid-column: 1;
+  }
+}
+
 /* Run error banner */
 .run-error {
   background: var(--color-error-bg);
@@ -635,6 +698,33 @@ input, select, textarea {
   padding: var(--spacing-lg);
 }
 
+.strategy-block--clickable {
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.strategy-block--clickable:hover {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+.strategy-block--clickable:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-accent);
+}
+
+.strategy-block--selected {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-accent);
+}
+
+.strategy-block-hint {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
 .strategy-block-title {
   font-size: 0.875rem;
   font-weight: 600;
@@ -684,6 +774,106 @@ input, select, textarea {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-size: 0.75rem;
+}
+
+/* Compound interest summary cards + growth chart */
+.compound-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-md);
+}
+
+.compound-summary-card {
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.compound-summary-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.compound-summary-value {
+  font-family: var(--font-mono);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.compound-summary-value--interest {
+  color: var(--color-investment);
+}
+
+.growth-chart .results-chart-title {
+  margin-bottom: var(--spacing-sm);
+}
+
+@media (max-width: 520px) {
+  .compound-summary {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Principal remaining chart (debt payoff) */
+.principal-chart-panel {
+  margin-top: var(--spacing-lg);
+  padding: var(--spacing-lg);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.principal-chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.principal-chart-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.btn-close-chart {
+  flex-shrink: 0;
+}
+
+.principal-chart-tooltip-wrapper {
+  background: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 6px !important;
+  padding: var(--spacing-sm) var(--spacing-md) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.principal-chart-tooltip {
+  font-size: 0.8125rem;
+  color: var(--color-text);
+}
+
+.principal-chart-tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+}
+
+.principal-chart-tooltip-row strong {
+  font-family: var(--font-mono);
 }
 
 /* ============================================================
