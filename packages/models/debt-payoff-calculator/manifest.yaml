@@ -1,0 +1,45 @@
+id: debt-payoff-calculator
+name: Debt Payoff Calculator
+version: 1.0.0
+category: debt
+author: finlogicos
+
+inputs:
+  - id: debts
+    label: Debts
+    type: string
+    required: true
+    description: >
+      JSON array of debt objects. Each object must have:
+      name (string), balance (number), rate (number, annual percentage),
+      minimumPayment (number).
+      Example: [{"name":"Card A","balance":5000,"rate":19.99,"minimumPayment":100}]
+
+  - id: extraMonthlyPayment
+    label: Extra Monthly Payment
+    type: number
+    required: false
+    default: 0
+    description: Additional amount applied each month on top of all minimum payments
+
+outputs:
+  - id: avalanche
+    label: Avalanche Strategy
+    type: string
+    description: >
+      Result of highest-rate-first strategy. JSON object with:
+      totalInterest, totalPaid, months, payoffOrder (array of debt names in payoff sequence)
+
+  - id: snowball
+    label: Snowball Strategy
+    type: string
+    description: >
+      Result of lowest-balance-first strategy. JSON object with:
+      totalInterest, totalPaid, months, payoffOrder (array of debt names in payoff sequence)
+
+  - id: interestSaved
+    label: Interest Saved (Avalanche vs Snowball)
+    type: number
+    format: currency
+    prefix: "$"
+    description: How much less interest is paid using the avalanche vs snowball strategy
