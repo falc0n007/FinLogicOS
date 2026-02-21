@@ -1,0 +1,69 @@
+id: compound-interest-growth
+name: Compound Interest Growth
+version: 1.0.0
+category: investment
+author: finlogicos
+
+inputs:
+  - id: principal
+    label: Initial Principal
+    type: number
+    required: true
+    description: Starting investment amount
+
+  - id: annualRate
+    label: Annual Interest Rate
+    type: number
+    required: true
+    description: Annual interest rate as a percentage (e.g. 7 for 7%)
+
+  - id: years
+    label: Investment Period (Years)
+    type: number
+    required: true
+    description: Number of years to grow the investment
+
+  - id: monthlyContribution
+    label: Monthly Contribution
+    type: number
+    required: false
+    default: 0
+    description: Fixed amount added each month during the investment period
+
+  - id: compoundingFrequency
+    label: Compounding Frequency
+    type: enum
+    values:
+      - monthly
+      - quarterly
+      - annually
+    required: false
+    default: monthly
+    description: How often interest is compounded and contributions are applied
+
+outputs:
+  - id: finalBalance
+    label: Final Balance
+    type: number
+    format: currency
+    prefix: "$"
+    description: Total account value at the end of the investment period
+
+  - id: totalContributions
+    label: Total Contributions
+    type: number
+    format: currency
+    prefix: "$"
+    description: Sum of all contributions (principal plus all periodic contributions)
+
+  - id: totalInterest
+    label: Total Interest Earned
+    type: number
+    format: currency
+    prefix: "$"
+    description: Total interest accrued over the investment period
+
+  - id: yearByYear
+    label: Year-by-Year Breakdown
+    type: string
+    description: Array of objects with year and balance for each year of the investment

@@ -1,0 +1,59 @@
+id: us-federal-income-tax-2024
+name: US Federal Income Tax 2024
+version: 1.0.0
+category: tax
+author: finlogicos
+
+inputs:
+  - id: grossIncome
+    label: Gross Income
+    type: number
+    required: true
+    description: Total gross income before any deductions
+
+  - id: filingStatus
+    label: Filing Status
+    type: enum
+    values:
+      - single
+      - married_jointly
+      - married_separately
+      - head_of_household
+    required: true
+    description: IRS filing status for the tax year
+
+  - id: deductions
+    label: Additional Deductions
+    type: number
+    required: false
+    default: 0
+    description: Additional itemized deductions beyond the standard deduction (optional)
+
+outputs:
+  - id: taxableIncome
+    label: Taxable Income
+    type: number
+    format: currency
+    prefix: "$"
+    description: Gross income minus all applicable deductions
+
+  - id: totalTax
+    label: Total Federal Tax
+    type: number
+    format: currency
+    prefix: "$"
+    description: Total federal income tax owed
+
+  - id: effectiveRate
+    label: Effective Tax Rate
+    type: number
+    format: decimal
+    suffix: "%"
+    description: Total tax as a percentage of gross income
+
+  - id: marginalRate
+    label: Marginal Tax Rate
+    type: number
+    format: decimal
+    suffix: "%"
+    description: The tax rate applied to the last dollar of taxable income
