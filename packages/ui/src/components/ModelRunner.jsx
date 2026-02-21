@@ -2,6 +2,7 @@ import { useState } from 'react';
 import ResultsDisplay from './ResultsDisplay.jsx';
 import { IconArrowLeft } from '../icons/IconArrowLeft.jsx';
 import { IconPlay } from '../icons/IconPlay.jsx';
+import DebtListInput from './DebtListInput.jsx';
 
 // ---------------------------------------------------------------------------
 // Build the initial form state from the model's input schema
@@ -31,6 +32,8 @@ function coerceValues(inputs, rawValues) {
     const raw = rawValues[input.id];
     if (input.type === 'number') {
       coerced[input.id] = raw === '' ? (input.default ?? 0) : Number(raw);
+    } else if (input.type === 'debt-list') {
+      coerced[input.id] = raw || '[]';
     } else {
       coerced[input.id] = raw;
     }
@@ -67,6 +70,10 @@ function FormField({ input, value, onChange, error }) {
             </option>
           ))}
         </select>
+      )}
+
+      {input.type === 'debt-list' && (
+        <DebtListInput value={value} onChange={onChange} inputId={input.id} />
       )}
 
       {input.type === 'textarea' && (

@@ -1,7 +1,7 @@
 /**
  * Hardcoded model manifests and browser-compatible logic implementations.
  *
- * The canonical model logic lives in packages/models/*/logic.js and uses
+ * The canonical model logic lives in each model pack's logic.js and uses
  * CommonJS + decimal.js, neither of which is available in the browser bundle.
  * These implementations reproduce the identical algorithms using native ES
  * arithmetic. They are intentionally kept close to the originals in structure.
@@ -372,13 +372,10 @@ export const MODELS = [
     inputs: [
       {
         id: 'debts',
-        label: 'Debts (JSON)',
-        type: 'textarea',
+        label: 'Your Debts',
+        type: 'debt-list',
         required: true,
-        description:
-          'JSON array of debt objects. Each must have: name, balance, rate (annual %), minimumPayment.',
-        placeholder:
-          '[{"name":"Card A","balance":5000,"rate":19.99,"minimumPayment":100},{"name":"Card B","balance":2000,"rate":24.99,"minimumPayment":50}]',
+        description: 'Add each debt with its name, current balance, annual interest rate, and minimum monthly payment.',
       },
       {
         id: 'extraMonthlyPayment',
