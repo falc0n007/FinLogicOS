@@ -1,0 +1,99 @@
+id: early-debt-payoff-impact
+name: Early Debt Payoff Impact
+version: 1.0.0
+category: scenario
+author: finlogicos
+
+description: >
+  Models the interest savings and freed cash flow from making extra monthly
+  payments on a single debt. Computes how many months earlier the debt is
+  paid off, total interest saved, and the monthly cash flow freed after payoff.
+
+inputs:
+  - id: current_balance
+    label: Current Balance
+    type: number
+    required: true
+    description: Remaining principal balance on the debt
+    placeholder: "15000"
+
+  - id: interest_rate_annual
+    label: Annual Interest Rate (%)
+    type: number
+    required: true
+    description: Annual percentage rate of the debt (e.g. 6.5 for 6.5%)
+    placeholder: "6.5"
+
+  - id: monthly_payment
+    label: Current Monthly Payment
+    type: number
+    required: true
+    description: Your current regular monthly payment (must exceed monthly interest)
+    placeholder: "350"
+
+  - id: remaining_months
+    label: Remaining Months
+    type: number
+    required: true
+    description: Number of months remaining on the original payoff schedule
+    placeholder: "48"
+
+  - id: extra_monthly_payment
+    label: Extra Monthly Payment (What If)
+    type: number
+    required: true
+    description: Additional amount you would pay each month on top of the regular payment
+    placeholder: "200"
+
+outputs:
+  - id: months_saved
+    label: Months Saved
+    type: number
+    description: How many months sooner the debt is paid off
+
+  - id: interest_saved
+    label: Interest Saved
+    type: number
+    format: currency
+    prefix: "$"
+    description: Total interest avoided by making extra payments
+
+  - id: new_payoff_date
+    label: New Payoff Date
+    type: string
+    description: Estimated date the debt is paid off with extra payments (YYYY-MM)
+
+  - id: cumulative_extra_paid
+    label: Cumulative Extra Paid
+    type: number
+    format: currency
+    prefix: "$"
+    description: Total extra principal paid to achieve early payoff
+
+  - id: total_interest_standard
+    label: Total Interest (Standard)
+    type: number
+    format: currency
+    prefix: "$"
+    description: Total interest paid under the original payment schedule
+
+  - id: total_interest_accelerated
+    label: Total Interest (Accelerated)
+    type: number
+    format: currency
+    prefix: "$"
+    description: Total interest paid with the extra monthly payment
+
+  - id: monthly_cash_flow_freed_after_payoff
+    label: Monthly Cash Flow Freed
+    type: number
+    format: currency
+    prefix: "$"
+    description: >
+      Monthly payment amount freed up after the debt is fully paid off
+      (regular payment only — does not assume you continue the extra payment)
+
+  - id: explain
+    label: Summary
+    type: string
+    description: Plain-language explanation of the payoff impact

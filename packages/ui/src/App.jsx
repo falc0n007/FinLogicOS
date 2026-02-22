@@ -1,9 +1,22 @@
 import { useState } from 'react';
+import {
+  HashRouter,
+  Routes,
+  Route,
+  NavLink,
+  useNavigate,
+} from 'react-router-dom';
 import ModelBrowser from './components/ModelBrowser.jsx';
 import ModelRunner from './components/ModelRunner.jsx';
+import ScenariosTab from './components/ScenariosTab.jsx';
+import ScenarioDetail, { CreateScenarioWizard } from './components/ScenarioComparison.jsx';
 import { IconChart } from './icons/IconChart.jsx';
 
-export default function App() {
+// ---------------------------------------------------------------------------
+// Models route — wraps ModelBrowser + ModelRunner with local state
+// ---------------------------------------------------------------------------
+
+function ModelsRoute() {
   const [selectedModel, setSelectedModel] = useState(null);
   const [results, setResults] = useState(null);
 
@@ -21,10 +34,27 @@ export default function App() {
     setResults(null);
   }
 
+  return selectedModel === null ? (
+    <ModelBrowser onSelect={handleSelectModel} />
+  ) : (
+    <ModelRunner
+      model={selectedModel}
+      results={results}
+      onResults={handleResults}
+      onBack={handleBack}
+    />
+  );
+}
+
+// ---------------------------------------------------------------------------
+// App shell with navigation
+// ---------------------------------------------------------------------------
+
+function AppShell() {
   return (
     <div className="app">
       <header className="app-header">
-        <div className="header-inner">
+        <div className="header-inner header-inner--with-nav">
           <div className="header-brand">
             <IconChart className="header-logo-icon" aria-hidden="true" />
             <div>
@@ -32,25 +62,45 @@ export default function App() {
               <p className="header-subtitle">Local-first financial intelligence platform</p>
             </div>
           </div>
+
+          <nav className="header-nav" aria-label="Main navigation">
+            <NavLink
+              to="/models"
+              className={({ isActive }) => `header-nav-link${isActive ? ' header-nav-link--active' : ''}`}
+            >
+              Models
+            </NavLink>
+            <NavLink
+              to="/scenarios"
+              className={({ isActive }) => `header-nav-link${isActive ? ' header-nav-link--active' : ''}`}
+            >
+              Scenarios
+            </NavLink>
+          </nav>
         </div>
       </header>
 
       <main className="app-main">
-        {selectedModel === null ? (
-          <ModelBrowser onSelect={handleSelectModel} />
-        ) : (
-          <ModelRunner
-            model={selectedModel}
-            results={results}
-            onResults={handleResults}
-            onBack={handleBack}
-          />
-        )}
+        <Routes>
+          <Route path="/" element={<ModelsRoute />} />
+          <Route path="/models" element={<ModelsRoute />} />
+          <Route path="/scenarios" element={<ScenariosTab />} />
+          <Route path="/scenarios/new" element={<CreateScenarioWizard />} />
+          <Route path="/scenarios/:id" element={<ScenarioDetail />} />
+        </Routes>
       </main>
 
       <footer className="app-footer">
         <p>FinLogicOS v0.1.0 &mdash; All computations run locally in your browser.</p>
       </footer>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <HashRouter>
+      <AppShell />
+    </HashRouter>
   );
 }

@@ -1,0 +1,25 @@
+id: health-score-explainer
+name: Financial Health Score Explainer
+version: 1.0.0
+category: health
+author: finlogicos-core
+description: >
+  Takes the output of financial-health-score and returns the top 3 concrete
+  actions that would most increase the score, each with a projected score delta.
+region: global
+inputs:
+  - id: score_output
+    label: Output object from financial-health-score
+    type: object
+    required: true
+  - id: monthly_income
+    label: Monthly gross income (for calculating action thresholds)
+    type: number
+    required: true
+outputs:
+  - id: top_actions
+    label: Ranked list of top 3 score-improving actions
+    type: array
+  - id: explain
+    label: Explainability block
+    type: object

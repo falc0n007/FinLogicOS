@@ -1,0 +1,127 @@
+id: freelance-vs-employed
+name: Freelance vs. Employed
+version: 1.0.0
+category: scenario
+author: finlogicos
+
+description: >
+  Full financial comparison of freelance/self-employment versus W-2 employment,
+  accounting for self-employment tax, employer benefits value, retirement
+  contribution limits, and business expenses. Computes the break-even freelance
+  revenue needed to match your employed net income.
+
+disclaimer: >
+  This model provides simplified tax estimates for planning purposes only and
+  does not constitute tax advice. SE tax, retirement contribution limits, and
+  benefit costs are approximate. Consult a qualified tax and financial
+  professional before making employment decisions.
+
+inputs:
+  - id: employed_salary
+    label: Employed Annual Salary
+    type: number
+    required: true
+    description: Gross W-2 annual salary
+    placeholder: "90000"
+
+  - id: freelance_revenue_annual
+    label: Freelance Annual Revenue
+    type: number
+    required: true
+    description: Total gross annual revenue from freelance/self-employment work
+    placeholder: "120000"
+
+  - id: employer_benefits_value
+    label: Employer Benefits Value (Annual)
+    type: number
+    required: false
+    default: 0
+    description: >
+      Dollar value of employer-provided benefits (health insurance, 401k match,
+      dental, vision, etc.) that you would need to replace as a freelancer
+    placeholder: "15000"
+
+  - id: filing_status
+    label: Filing Status
+    type: enum
+    values:
+      - single
+      - married_filing_jointly
+    required: true
+    default: single
+    description: Federal income tax filing status
+
+  - id: state
+    label: State (abbreviation)
+    type: string
+    required: true
+    description: Two-letter US state abbreviation
+    placeholder: "CA"
+
+  - id: freelance_business_expenses
+    label: Freelance Business Expenses (Annual)
+    type: number
+    required: false
+    default: 0
+    description: >
+      Deductible business expenses (home office, equipment, software, etc.).
+      These reduce your freelance taxable income.
+    placeholder: "8000"
+
+outputs:
+  - id: employed_net_income
+    label: Employed Net Income (Annual)
+    type: number
+    format: currency
+    prefix: "$"
+    description: After-tax, after-FICA annual net income while employed
+
+  - id: freelance_net_income
+    label: Freelance Net Income (Annual)
+    type: number
+    format: currency
+    prefix: "$"
+    description: >
+      After SE-tax, after-income-tax annual net income from freelancing
+      (after subtracting business expenses)
+
+  - id: retirement_max_contribution_delta
+    label: Max Retirement Contribution Delta
+    type: number
+    format: currency
+    prefix: "$"
+    description: >
+      Difference in maximum annual retirement contribution: SEP-IRA (freelance)
+      minus traditional 401k employee limit. Positive = freelance allows more.
+
+  - id: health_insurance_delta
+    label: Health Insurance Annual Cost Delta
+    type: number
+    format: currency
+    prefix: "$"
+    description: >
+      Additional health insurance cost as a freelancer (equal to the employer
+      health insurance portion of benefits_value). If benefits_value is 0,
+      this will be 0.
+
+  - id: true_hourly_rate_comparison
+    label: True Hourly Rate (Freelance vs Employed)
+    type: string
+    description: >
+      Effective hourly rate for both scenarios assuming 2,000 working hours
+      per year, accounting for unpaid time off and overhead typical of
+      self-employment
+
+  - id: break_even_revenue
+    label: Break-Even Freelance Revenue
+    type: number
+    format: currency
+    prefix: "$"
+    description: >
+      The annual freelance gross revenue needed so that freelance net income
+      equals employed net income (after all taxes, SE tax, and expenses)
+
+  - id: explain
+    label: Summary
+    type: string
+    description: Plain-language comparison including key financial trade-offs
