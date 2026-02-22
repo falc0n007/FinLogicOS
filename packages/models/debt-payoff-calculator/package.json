@@ -1,0 +1,15 @@
+{
+  "name": "@finlogicos/model-debt-payoff-calculator",
+  "version": "1.0.0",
+  "description": "Compares avalanche vs snowball debt payoff strategies",
+  "main": "logic.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "dependencies": {
+    "decimal.js": "^10.4.3"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}

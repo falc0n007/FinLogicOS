@@ -1,0 +1,21 @@
+{
+  "name": "@finlogicos/cli",
+  "version": "0.1.0",
+  "description": "Command-line interface for FinLogicOS model execution",
+  "main": "src/index.js",
+  "bin": {
+    "finlogic": "./src/index.js"
+  },
+  "scripts": {
+    "test": "echo 'CLI tests: see integration tests'"
+  },
+  "dependencies": {
+    "@finlogicos/core": "*",
+    "chalk": "^4.1.2",
+    "commander": "^12.0.0",
+    "inquirer": "^8.2.6"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

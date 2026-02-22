@@ -1,0 +1,20 @@
+{
+  "name": "@finlogicos/core",
+  "version": "0.1.0",
+  "description": "Core runtime for FinLogicOS model execution",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "dependencies": {
+    "better-sqlite3": "^9.4.3",
+    "decimal.js": "^10.4.3",
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
