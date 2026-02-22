@@ -1,0 +1,96 @@
+id: relocation-tax-delta
+name: Relocation Tax Delta
+version: 1.0.0
+category: scenario
+author: finlogicos
+
+description: >
+  Computes the state income tax burden difference between two US states for the
+  same gross income. Embeds 2024 state income tax bracket data for all 50 states
+  and Washington DC. Useful for evaluating the tax impact of relocating.
+
+disclaimer: >
+  State tax rates and brackets reflect 2024 legislative data and are provided
+  for estimation purposes only. Local income taxes, property taxes, sales taxes,
+  and cost-of-living differences are not included in this model. Consult a
+  qualified tax professional before making relocation decisions.
+
+inputs:
+  - id: annual_income
+    label: Annual Income
+    type: number
+    required: true
+    description: Gross annual income (wages, salary) before any deductions
+    placeholder: "100000"
+
+  - id: filing_status
+    label: Filing Status
+    type: enum
+    values:
+      - single
+      - married_filing_jointly
+    required: true
+    default: single
+    description: Federal/state filing status (most states follow federal definitions)
+
+  - id: state_from
+    label: Current State
+    type: string
+    required: true
+    description: Two-letter abbreviation of the state you are moving FROM (e.g. CA)
+    placeholder: "CA"
+
+  - id: state_to
+    label: Destination State
+    type: string
+    required: true
+    description: Two-letter abbreviation of the state you are moving TO (e.g. TX)
+    placeholder: "TX"
+
+outputs:
+  - id: state_from_income_tax
+    label: Current State Tax (Annual)
+    type: number
+    format: currency
+    prefix: "$"
+    description: Estimated annual state income tax in your current state
+
+  - id: state_to_income_tax
+    label: Destination State Tax (Annual)
+    type: number
+    format: currency
+    prefix: "$"
+    description: Estimated annual state income tax in your destination state
+
+  - id: annual_savings_or_cost
+    label: Annual Savings / Cost
+    type: number
+    format: currency
+    prefix: "$"
+    description: >
+      Positive = annual tax savings from moving to destination state.
+      Negative = additional annual tax cost.
+
+  - id: monthly_savings_or_cost
+    label: Monthly Savings / Cost
+    type: number
+    format: currency
+    prefix: "$"
+    description: Annual savings/cost divided by 12
+
+  - id: state_from_effective_rate
+    label: Current State Effective Rate
+    type: number
+    format: percent
+    description: Effective state income tax rate in current state
+
+  - id: state_to_effective_rate
+    label: Destination State Effective Rate
+    type: number
+    format: percent
+    description: Effective state income tax rate in destination state
+
+  - id: explain
+    label: Summary
+    type: string
+    description: Plain-language explanation including relocation tax tradeoff context

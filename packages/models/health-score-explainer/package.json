@@ -1,0 +1,10 @@
+{
+  "name": "@finlogic/model-health-score-explainer",
+  "version": "1.0.0",
+  "description": "Generates top 3 concrete score-improving actions from a financial-health-score output",
+  "main": "logic.js",
+  "license": "MIT",
+  "dependencies": {
+    "decimal.js": "^10.4.3"
+  }
+}

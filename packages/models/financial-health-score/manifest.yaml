@@ -1,0 +1,92 @@
+id: financial-health-score
+name: Financial Health Score
+version: 1.0.0
+category: health
+author: finlogicos-core
+description: >
+  Calculates a composite 0–100 financial health score across six dimensions.
+  Every point is explainable. Formula is open and community-auditable.
+region: global
+inputs:
+  - id: monthly_income
+    label: Monthly gross income
+    type: number
+    unit: currency
+    required: true
+  - id: monthly_essential_expenses
+    label: Monthly essential expenses
+    type: number
+    unit: currency
+    required: true
+  - id: monthly_savings
+    label: Monthly savings (all accounts)
+    type: number
+    unit: currency
+    required: true
+  - id: total_liquid_assets
+    label: Total liquid assets (checking + savings + money market)
+    type: number
+    unit: currency
+    required: true
+  - id: total_debt
+    label: Total non-mortgage debt outstanding
+    type: number
+    unit: currency
+    required: true
+  - id: monthly_debt_payments
+    label: Total monthly debt payments
+    type: number
+    unit: currency
+    required: true
+  - id: retirement_balance
+    label: Current retirement account balance
+    type: number
+    unit: currency
+    required: true
+  - id: age
+    label: Current age
+    type: number
+    required: true
+  - id: annual_income
+    label: Annual gross income
+    type: number
+    unit: currency
+    required: true
+  - id: has_emergency_fund_target
+    label: Emergency fund months target
+    type: number
+    default: 6
+  - id: has_term_life_insurance
+    label: Has adequate term life insurance
+    type: boolean
+    default: false
+  - id: has_disability_insurance
+    label: Has disability insurance
+    type: boolean
+    default: false
+  - id: net_worth_last_year
+    label: Net worth 12 months ago (optional, enables trajectory scoring)
+    type: number
+    unit: currency
+    required: false
+  - id: current_net_worth
+    label: Current net worth
+    type: number
+    unit: currency
+    required: true
+outputs:
+  - id: total_score
+    label: Overall financial health score
+    type: number
+    format: integer
+    range: [0, 100]
+  - id: grade
+    label: Letter grade
+    type: string
+    enum: [A, B, C, D, F]
+  - id: dimensions
+    label: Per-dimension scores
+    type: object
+  - id: explain
+    label: Explainability block
+    type: object

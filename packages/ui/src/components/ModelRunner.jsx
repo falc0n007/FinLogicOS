@@ -1,7 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import ResultsDisplay from './ResultsDisplay.jsx';
 import { IconArrowLeft } from '../icons/IconArrowLeft.jsx';
 import { IconPlay } from '../icons/IconPlay.jsx';
+import DebtListInput from './DebtListInput.jsx';
+import CompoundInterestForm from './CompoundInterestForm.jsx';
+import {
+  getCachedInputs,
+  setCachedInputs,
+  clearCachedInputs,
+  mergeCachedWithDefaults,
+} from '../data/inputCache.js';
 
 // ---------------------------------------------------------------------------
 // Build the initial form state from the model's input schema
@@ -31,6 +39,8 @@ function coerceValues(inputs, rawValues) {
     const raw = rawValues[input.id];
     if (input.type === 'number') {
       coerced[input.id] = raw === '' ? (input.default ?? 0) : Number(raw);
+    } else if (input.type === 'debt-list') {
+      coerced[input.id] = raw || '[]';
     } else {
       coerced[input.id] = raw;
     }
@@ -67,6 +77,10 @@ function FormField({ input, value, onChange, error }) {
             </option>
           ))}
         </select>
+      )}
+
+      {input.type === 'debt-list' && (
+        <DebtListInput value={value} onChange={onChange} inputId={input.id} />
       )}
 
       {input.type === 'textarea' && (
@@ -114,11 +128,72 @@ function FormField({ input, value, onChange, error }) {
 // Main component
 // ---------------------------------------------------------------------------
 
+const CACHE_DEBOUNCE_MS = 600;
+const COMPOUND_INTEREST_RUN_DEBOUNCE_MS = 280;
+
 export default function ModelRunner({ model, results, onResults, onBack }) {
-  const [values, setValues] = useState(() => buildInitialValues(model.inputs));
+  const defaults = buildInitialValues(model.inputs);
+  const [values, setValues] = useState(() =>
+    mergeCachedWithDefaults(model.inputs, getCachedInputs(model.id), defaults)
+  );
   const [errors, setErrors] = useState({});
   const [runError, setRunError] = useState(null);
   const [isRunning, setIsRunning] = useState(false);
+  const cacheTimeoutRef = useRef(null);
+  const autoRunTimeoutRef = useRef(null);
+
+  // Persist inputs to localStorage (debounced) so partial fills survive refresh
+  useEffect(() => {
+    if (cacheTimeoutRef.current) clearTimeout(cacheTimeoutRef.current);
+    cacheTimeoutRef.current = setTimeout(() => {
+      setCachedInputs(model.id, values);
+      cacheTimeoutRef.current = null;
+    }, CACHE_DEBOUNCE_MS);
+    return () => {
+      if (cacheTimeoutRef.current) clearTimeout(cacheTimeoutRef.current);
+    };
+  }, [model.id, values]);
+
+  // Compound interest: run model when inputs change so the graph updates without clicking Run
+  useEffect(() => {
+    if (model.id !== 'compound-interest-growth') return;
+
+    if (autoRunTimeoutRef.current) clearTimeout(autoRunTimeoutRef.current);
+    autoRunTimeoutRef.current = setTimeout(() => {
+      autoRunTimeoutRef.current = null;
+
+      const validationErrors = {};
+      for (const input of model.inputs) {
+        const raw = values[input.id];
+        if (input.required) {
+          if (raw === '' || raw === undefined || raw === null) {
+            validationErrors[input.id] = `${input.label} is required.`;
+          } else if (input.type === 'number' && isNaN(Number(raw))) {
+            validationErrors[input.id] = `${input.label} must be a valid number.`;
+          }
+        }
+      }
+
+      if (Object.keys(validationErrors).length > 0) {
+        setErrors(validationErrors);
+        return;
+      }
+
+      setErrors({});
+      setRunError(null);
+      try {
+        const coerced = coerceValues(model.inputs, values);
+        const output = model.run(coerced);
+        onResults(output);
+      } catch (err) {
+        setRunError(err.message ?? 'An unexpected error occurred.');
+      }
+    }, COMPOUND_INTEREST_RUN_DEBOUNCE_MS);
+
+    return () => {
+      if (autoRunTimeoutRef.current) clearTimeout(autoRunTimeoutRef.current);
+    };
+  }, [model.id, model.inputs, model.run, values, onResults]);
 
   function handleChange(id, value) {
     setValues((prev) => ({ ...prev, [id]: value }));
@@ -160,6 +235,7 @@ export default function ModelRunner({ model, results, onResults, onBack }) {
     try {
       const coerced = coerceValues(model.inputs, values);
       const output = model.run(coerced);
+      setCachedInputs(model.id, values);
       onResults(output);
     } catch (err) {
       setRunError(err.message ?? 'An unexpected error occurred.');
@@ -169,6 +245,7 @@ export default function ModelRunner({ model, results, onResults, onBack }) {
   }
 
   function handleReset() {
+    clearCachedInputs(model.id);
     setValues(buildInitialValues(model.inputs));
     setErrors({});
     setRunError(null);
@@ -201,15 +278,23 @@ export default function ModelRunner({ model, results, onResults, onBack }) {
           <fieldset className="form-fieldset">
             <legend className="form-legend">Model Inputs</legend>
 
-            {model.inputs.map((input) => (
-              <FormField
-                key={input.id}
-                input={input}
-                value={values[input.id] ?? ''}
+            {model.id === 'compound-interest-growth' ? (
+              <CompoundInterestForm
+                values={values}
                 onChange={handleChange}
-                error={errors[input.id]}
+                errors={errors}
               />
-            ))}
+            ) : (
+              model.inputs.map((input) => (
+                <FormField
+                  key={input.id}
+                  input={input}
+                  value={values[input.id] ?? ''}
+                  onChange={handleChange}
+                  error={errors[input.id]}
+                />
+              ))
+            )}
           </fieldset>
 
           {runError && (

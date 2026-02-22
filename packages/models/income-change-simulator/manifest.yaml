@@ -1,0 +1,134 @@
+id: income-change-simulator
+name: Income Change Simulator
+version: 1.0.0
+category: scenario
+author: finlogicos
+
+description: >
+  Models the net-of-tax impact of a salary change, job change, or switch to
+  freelance/self-employment. Uses simplified 2024 federal marginal tax brackets
+  and estimated state income tax rates.
+
+disclaimer: >
+  This model provides simplified tax estimates for planning purposes only and
+  does not constitute tax advice. Consult a qualified tax professional for
+  precise calculations specific to your situation.
+
+inputs:
+  - id: current_annual_income
+    label: Current Annual Income
+    type: number
+    required: true
+    description: Your current gross annual income (salary, wages, or freelance revenue)
+    placeholder: "75000"
+
+  - id: new_annual_income
+    label: New Annual Income
+    type: number
+    required: true
+    description: Projected new gross annual income after the change
+    placeholder: "95000"
+
+  - id: filing_status
+    label: Filing Status
+    type: enum
+    values:
+      - single
+      - married_filing_jointly
+      - married_filing_separately
+      - head_of_household
+    required: true
+    default: single
+    description: Your federal income tax filing status
+
+  - id: state
+    label: State (abbreviation)
+    type: string
+    required: true
+    description: Two-letter US state abbreviation (e.g. CA, TX, NY)
+    placeholder: "CA"
+
+  - id: income_type
+    label: Income Type
+    type: enum
+    values:
+      - salary
+      - freelance
+      - hourly
+    required: true
+    default: salary
+    description: >
+      salary = W-2 employment; freelance = self-employment (SE tax applies);
+      hourly = treated like salary for tax purposes
+
+  - id: retirement_contribution_pct
+    label: Retirement Contribution (%)
+    type: number
+    required: false
+    default: 0
+    description: >
+      Pre-tax retirement contribution as a percentage of income (e.g. 6 for 6%).
+      Applied to reduce federal and state taxable income.
+    placeholder: "6"
+
+outputs:
+  - id: gross_income_delta
+    label: Gross Income Change
+    type: number
+    format: currency
+    prefix: "$"
+    description: Difference in annual gross income (new minus current)
+
+  - id: estimated_federal_tax_delta
+    label: Federal Tax Change (Est.)
+    type: number
+    format: currency
+    prefix: "$"
+    description: Change in estimated federal income tax
+
+  - id: estimated_state_tax_delta
+    label: State Tax Change (Est.)
+    type: number
+    format: currency
+    prefix: "$"
+    description: Change in estimated state income tax
+
+  - id: estimated_fica_delta
+    label: FICA / SE Tax Change (Est.)
+    type: number
+    format: currency
+    prefix: "$"
+    description: >
+      Change in FICA (Social Security + Medicare) for employees, or
+      self-employment tax delta when switching to/from freelance
+
+  - id: net_take_home_delta_annual
+    label: Net Take-Home Change (Annual)
+    type: number
+    format: currency
+    prefix: "$"
+    description: Estimated annual change in after-tax, after-FICA income
+
+  - id: net_take_home_delta_monthly
+    label: Net Take-Home Change (Monthly)
+    type: number
+    format: currency
+    prefix: "$"
+    description: Estimated monthly change in after-tax, after-FICA income
+
+  - id: effective_rate_old
+    label: Effective Tax Rate (Current)
+    type: number
+    format: percent
+    description: Effective total tax rate on current income (federal + state + FICA)
+
+  - id: effective_rate_new
+    label: Effective Tax Rate (New)
+    type: number
+    format: percent
+    description: Effective total tax rate on new income (federal + state + FICA)
+
+  - id: explain
+    label: Summary
+    type: string
+    description: Plain-language explanation of the key differences

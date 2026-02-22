@@ -78,7 +78,7 @@ Run the CLI directly during development:
 
 ```bash
 node packages/cli/bin/finlogic.js list
-node packages/cli/bin/finlogic.js run us-federal-income-tax-2024
+node packages/cli/bin/finlogic.js run compound-interest-growth
 ```
 
 ---

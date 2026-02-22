@@ -1,0 +1,10 @@
+{
+  "name": "@finlogic/model-financial-health-score",
+  "version": "1.0.0",
+  "description": "Composite 0-100 financial health score across six dimensions",
+  "main": "logic.js",
+  "license": "MIT",
+  "dependencies": {
+    "decimal.js": "^10.4.3"
+  }
+}

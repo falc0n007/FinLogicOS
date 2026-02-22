@@ -23,7 +23,7 @@ MIT licensed and fully transparent. Read every line, propose changes, or build y
 npm install
 npm test
 npx finlogic list
-npx finlogic run us-federal-income-tax-2024
+npx finlogic run compound-interest-growth
 ```
 
 ---
