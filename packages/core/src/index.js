@@ -13,6 +13,10 @@ const { createSandbox } = require('./sandbox');
 const { validateInputs } = require('./validator');
 const { formatOutput } = require('./formatter');
 const { SnapshotStore } = require('./snapshot');
+const { verifyPack, hashFile, hashBuffer } = require('./verifier');
+const { JournalStore, DECISION_CATEGORIES } = require('./journal');
+const { ProfileManager } = require('./profile-manager');
+const { PlaybookRunner, PlaybookExecutionError } = require('./playbook-runner');
 
 /**
  * Convenience wrapper that wires together the loader, validator, sandbox, and
@@ -53,4 +57,12 @@ module.exports = {
   createSandbox,
   validateInputs,
   SnapshotStore,
+  verifyPack,
+  hashFile,
+  hashBuffer,
+  JournalStore,
+  DECISION_CATEGORIES,
+  ProfileManager,
+  PlaybookRunner,
+  PlaybookExecutionError,
 };

@@ -1,0 +1,116 @@
+id: playbook-new-child
+name: New Child Financial Playbook
+version: 1.0.0
+category: playbook
+event: new_child
+description: >
+  Evaluates the financial impact of a new child across childcare costs,
+  education savings, insurance gaps, and parental leave planning.
+region: us
+author: finlogicos-core
+
+intake_fields:
+  - id: annual_income
+    label: Annual gross household income
+    type: number
+    unit: currency
+    required: true
+  - id: monthly_expenses
+    label: Monthly essential expenses (current)
+    type: number
+    unit: currency
+    required: true
+  - id: current_life_insurance_coverage
+    label: Current life insurance coverage amount
+    type: number
+    unit: currency
+    required: true
+  - id: number_of_children_after
+    label: Total number of children after this birth
+    type: number
+    required: true
+  - id: childcare_cost_monthly
+    label: Expected monthly childcare cost
+    type: number
+    unit: currency
+    required: true
+  - id: parental_leave_weeks_paid
+    label: Weeks of paid parental leave available
+    type: number
+    required: true
+  - id: parental_leave_weeks_unpaid
+    label: Additional weeks of unpaid leave planned
+    type: number
+    default: 0
+  - id: state
+    label: State of residence
+    type: string
+    required: true
+
+models:
+  - id: childcare-cost
+    model: childcare-cost-impact
+    section_label: "Childcare Cost Impact"
+    input_map:
+      annual_income: intake.annual_income
+      monthly_expenses: intake.monthly_expenses
+      childcare_cost_monthly: intake.childcare_cost_monthly
+      number_of_children: intake.number_of_children_after
+    on_error: warn_and_continue
+
+  - id: education-savings
+    model: 529-contribution-optimizer
+    section_label: "529 Education Savings Plan"
+    input_map:
+      annual_income: intake.annual_income
+      state: intake.state
+      number_of_children: intake.number_of_children_after
+
+  - id: insurance-gap
+    model: life-insurance-gap-calculator
+    section_label: "Life Insurance Gap Analysis"
+    input_map:
+      annual_income: intake.annual_income
+      current_coverage: intake.current_life_insurance_coverage
+      number_of_dependents: intake.number_of_children_after
+      monthly_expenses: intake.monthly_expenses
+
+  - id: leave-bridge
+    model: parental-leave-income-bridge
+    section_label: "Parental Leave Income Bridge"
+    input_map:
+      annual_income: intake.annual_income
+      paid_weeks: intake.parental_leave_weeks_paid
+      unpaid_weeks: intake.parental_leave_weeks_unpaid
+    condition: "intake.parental_leave_weeks_unpaid > 0"
+
+report_sections:
+  - type: summary_card
+    label: "Monthly Budget Impact"
+    source: childcare-cost
+    key: monthly_budget_delta
+
+  - type: model_output
+    model_run_id: childcare-cost
+    label: "Childcare Costs"
+
+  - type: model_output
+    model_run_id: education-savings
+    label: "Education Savings"
+
+  - type: model_output
+    model_run_id: insurance-gap
+    label: "Insurance Gap"
+
+  - type: model_output
+    model_run_id: leave-bridge
+    label: "Leave Income Bridge"
+    hide_if_skipped: true
+
+  - type: action_checklist
+    label: "Your Next Steps"
+    items:
+      - "Update your monthly budget to include childcare costs"
+      - "Open a 529 plan if you do not have one"
+      - "Review life insurance coverage against the gap analysis"
+      - "Build an income bridge fund if taking unpaid leave"

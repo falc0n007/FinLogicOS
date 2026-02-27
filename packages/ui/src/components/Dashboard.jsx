@@ -64,7 +64,13 @@ export default function Dashboard({ onRunHealthScore, onSelectModel }) {
           />
         ) : (
           <div className="dashboard-empty-state">
-            <div className="dashboard-empty-icon">📊</div>
+            <div className="dashboard-empty-icon">
+            <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect x="3" y="12" width="4" height="9" rx="1" />
+              <rect x="10" y="7" width="4" height="14" rx="1" />
+              <rect x="17" y="3" width="4" height="18" rx="1" />
+            </svg>
+          </div>
             <p className="dashboard-empty-text">
               Get a personalised 0–100 score with an explainable breakdown across
               six financial dimensions: emergency fund, debt load, savings rate,

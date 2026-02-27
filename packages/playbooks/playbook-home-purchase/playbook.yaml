@@ -1,0 +1,119 @@
+id: playbook-home-purchase
+name: Home Purchase Playbook
+version: 1.0.0
+category: playbook
+event: home_purchase
+description: >
+  Runs a suite of models to evaluate home purchase readiness, affordability,
+  mortgage vs. rent tradeoffs, and opportunity cost of down payment.
+region: us
+author: finlogicos-core
+
+intake_fields:
+  - id: annual_income
+    label: Annual gross household income
+    type: number
+    unit: currency
+    required: true
+  - id: monthly_expenses
+    label: Monthly essential expenses
+    type: number
+    unit: currency
+    required: true
+  - id: total_savings
+    label: Total liquid savings available
+    type: number
+    unit: currency
+    required: true
+  - id: target_home_price
+    label: Target home price
+    type: number
+    unit: currency
+    required: true
+  - id: down_payment_pct
+    label: Down payment percentage
+    type: number
+    default: 20
+  - id: mortgage_rate
+    label: Current 30-year fixed mortgage rate (%)
+    type: number
+    required: true
+  - id: monthly_rent
+    label: Current monthly rent
+    type: number
+    unit: currency
+    required: true
+  - id: state
+    label: State of purchase
+    type: string
+    required: true
+
+models:
+  - id: affordability-check
+    model: mortgage-affordability-check
+    section_label: "Affordability Check"
+    input_map:
+      annual_income: intake.annual_income
+      monthly_expenses: intake.monthly_expenses
+      target_price: intake.target_home_price
+      down_payment_pct: intake.down_payment_pct
+      mortgage_rate: intake.mortgage_rate
+    on_error: warn_and_continue
+
+  - id: rent-vs-buy
+    model: rent-vs-buy-calculator
+    section_label: "Rent vs. Buy Break-Even"
+    input_map:
+      home_price: intake.target_home_price
+      down_payment_pct: intake.down_payment_pct
+      mortgage_rate: intake.mortgage_rate
+      monthly_rent: intake.monthly_rent
+      annual_income: intake.annual_income
+
+  - id: down-payment-opportunity-cost
+    model: opportunity-cost-of-lump-sum
+    section_label: "Down Payment Opportunity Cost"
+    input_map:
+      lump_sum: "derived: intake.target_home_price * intake.down_payment_pct / 100"
+      years: 10
+      expected_market_return_pct: 7
+
+  - id: pmi-timeline
+    model: pmi-elimination-timeline
+    section_label: "PMI Elimination Timeline"
+    input_map:
+      home_price: intake.target_home_price
+      down_payment_pct: intake.down_payment_pct
+      mortgage_rate: intake.mortgage_rate
+    condition: "intake.down_payment_pct < 20"
+
+report_sections:
+  - type: summary_card
+    label: "Overall Readiness"
+    source: affordability-check
+    key: readiness_score
+
+  - type: model_output
+    model_run_id: affordability-check
+    label: "Affordability Check"
+
+  - type: model_output
+    model_run_id: rent-vs-buy
+    label: "Rent vs. Buy"
+
+  - type: model_output
+    model_run_id: pmi-timeline
+    label: "PMI Timeline"
+    hide_if_skipped: true
+
+  - type: model_output
+    model_run_id: down-payment-opportunity-cost
+    label: "Opportunity Cost"
+
+  - type: action_checklist
+    label: "Your Next Steps"
+    items:
+      - "Review affordability check result before making an offer"
+      - "If renting is cheaper by >$300/mo, revisit purchase timeline"
+      - "If down payment < 20%, budget for PMI"
+      - "Consider keeping funds invested if flexibility matters more than equity"

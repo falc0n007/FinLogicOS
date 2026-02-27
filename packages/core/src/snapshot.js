@@ -74,6 +74,31 @@ class SnapshotStore {
       `);
       this._db.pragma('user_version = 1');
     }
+    if (version < 2) {
+      this._db.exec(`
+        CREATE TABLE IF NOT EXISTS journal_entries (
+          id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+          profile_id         TEXT    NOT NULL DEFAULT 'default',
+          entry_date         TEXT    NOT NULL,
+          category           TEXT    NOT NULL,
+          title              TEXT    NOT NULL,
+          amount             REAL,
+          amount_currency    TEXT    NOT NULL DEFAULT 'USD',
+          notes              TEXT,
+          outcome            TEXT,
+          snapshot_id        INTEGER REFERENCES snapshots(id),
+          playbook_report_id TEXT,
+          tags               TEXT    NOT NULL DEFAULT '[]',
+          created_at         TEXT    NOT NULL,
+          updated_at         TEXT    NOT NULL,
+          deleted_at         TEXT
+        );
+        CREATE INDEX IF NOT EXISTS idx_journal_profile_date ON journal_entries (profile_id, entry_date DESC);
+        CREATE INDEX IF NOT EXISTS idx_journal_category ON journal_entries (category);
+        CREATE INDEX IF NOT EXISTS idx_journal_snapshot ON journal_entries (snapshot_id);
+      `);
+      this._db.pragma('user_version = 2');
+    }
   }
 
   // ---------------------------------------------------------------------------

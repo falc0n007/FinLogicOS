@@ -1,0 +1,117 @@
+id: playbook-freelance-launch
+name: Freelance Launch Playbook
+version: 1.0.0
+category: playbook
+event: freelance_launch
+description: >
+  Comprehensive financial analysis for transitioning from employment to
+  freelance, covering tax obligations, emergency fund needs, retirement
+  options, and health insurance costs.
+region: us
+author: finlogicos-core
+
+intake_fields:
+  - id: projected_freelance_revenue
+    label: Projected annual freelance revenue
+    type: number
+    unit: currency
+    required: true
+  - id: current_employed_salary
+    label: Current employed salary
+    type: number
+    unit: currency
+    required: true
+  - id: filing_status
+    label: Filing status
+    type: enum
+    options: [single, married_filing_jointly, married_filing_separately, head_of_household]
+    required: true
+  - id: state
+    label: State of residence
+    type: string
+    required: true
+  - id: current_emergency_fund
+    label: Current emergency fund balance
+    type: number
+    unit: currency
+    required: true
+  - id: current_monthly_expenses
+    label: Current monthly expenses
+    type: number
+    unit: currency
+    required: true
+  - id: current_health_insurance_cost
+    label: Current monthly health insurance cost (employer-subsidized)
+    type: number
+    unit: currency
+    required: true
+  - id: freelance_business_expenses
+    label: Estimated annual business expenses
+    type: number
+    unit: currency
+    default: 0
+
+models:
+  - id: quarterly-tax
+    model: freelance-quarterly-tax-estimator
+    section_label: "Quarterly Tax Estimates"
+    input_map:
+      freelance_revenue: intake.projected_freelance_revenue
+      business_expenses: intake.freelance_business_expenses
+      filing_status: intake.filing_status
+      state: intake.state
+    on_error: warn_and_continue
+
+  - id: emergency-fund
+    model: emergency-fund-target
+    section_label: "Emergency Fund Target"
+    input_map:
+      monthly_expenses: intake.current_monthly_expenses
+      current_fund: intake.current_emergency_fund
+      income_stability: "variable"
+
+  - id: retirement-comparison
+    model: sep-ira-vs-solo-401k
+    section_label: "Retirement Account Comparison"
+    input_map:
+      net_self_employment_income: "derived: intake.projected_freelance_revenue - intake.freelance_business_expenses"
+      filing_status: intake.filing_status
+
+  - id: health-insurance
+    model: health-insurance-cost-delta
+    section_label: "Health Insurance Cost Change"
+    input_map:
+      current_cost: intake.current_health_insurance_cost
+      annual_income: intake.projected_freelance_revenue
+      state: intake.state
+
+report_sections:
+  - type: summary_card
+    label: "Net Income Comparison"
+    source: quarterly-tax
+    key: net_income_after_tax
+
+  - type: model_output
+    model_run_id: quarterly-tax
+    label: "Quarterly Tax Obligations"
+
+  - type: model_output
+    model_run_id: emergency-fund
+    label: "Emergency Fund"
+
+  - type: model_output
+    model_run_id: retirement-comparison
+    label: "Retirement Options"
+
+  - type: model_output
+    model_run_id: health-insurance
+    label: "Health Insurance"
+
+  - type: action_checklist
+    label: "Your Next Steps"
+    items:
+      - "Set aside quarterly tax payments before spending"
+      - "Build emergency fund to cover 6+ months of expenses"
+      - "Choose between SEP-IRA and Solo 401(k) based on contribution limits"
+      - "Get health insurance quotes from the ACA marketplace"
+      - "Open a separate business bank account"

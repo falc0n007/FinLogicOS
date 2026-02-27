@@ -1,12 +1,12 @@
 import { useState } from 'react';
 
 const DIMENSION_ICONS = {
-  emergency_fund:       '🛡',
-  debt_to_income:       '💳',
-  savings_rate:         '💰',
-  retirement_readiness: '🏦',
-  insurance_coverage:   '📋',
-  net_worth_trajectory: '📈',
+  emergency_fund:       '◈',
+  debt_to_income:       '◎',
+  savings_rate:         '◆',
+  retirement_readiness: '▣',
+  insurance_coverage:   '▤',
+  net_worth_trajectory: '▲',
 };
 
 const DIMENSION_DESCRIPTIONS = {

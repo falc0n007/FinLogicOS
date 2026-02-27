@@ -103,10 +103,11 @@ async function promptForModelId(availableIds) {
  * interactive input collection and execution, then saves the result to SQLite
  * via SnapshotStore.
  *
- * @param {string|undefined} modelId - Optional model id from the CLI argument.
- * @param {object}           chalk   - chalk instance
+ * @param {string|undefined} modelId      - Optional model id from the CLI argument.
+ * @param {object}           chalk        - chalk instance
+ * @param {string|undefined} [dbPathArg]  - Optional explicit db path (from --profile resolution).
  */
-async function snapshotSaveCommand(modelId, chalk) {
+async function snapshotSaveCommand(modelId, chalk, dbPathArg) {
   const { runCommand } = require('./run');
   const { SnapshotStore } = require('@finlogicos/core');
 
@@ -132,7 +133,7 @@ async function snapshotSaveCommand(modelId, chalk) {
     process.exit(1);
   }
 
-  const dbPath = resolveDbPath();
+  const dbPath = dbPathArg || resolveDbPath();
   const store = new SnapshotStore(dbPath);
 
   let snapshotId;
@@ -161,13 +162,14 @@ async function snapshotSaveCommand(modelId, chalk) {
  * Reads and displays saved snapshots from the SQLite store, optionally
  * filtered by model id.
  *
- * @param {string|undefined} modelId - Optional filter by model id.
- * @param {object}           chalk   - chalk instance
+ * @param {string|undefined} modelId     - Optional filter by model id.
+ * @param {object}           chalk       - chalk instance
+ * @param {string|undefined} [dbPathArg] - Optional explicit db path (from --profile resolution).
  */
-function snapshotListCommand(modelId, chalk) {
+function snapshotListCommand(modelId, chalk, dbPathArg) {
   const { SnapshotStore } = require('@finlogicos/core');
 
-  const dbPath = resolveDbPath();
+  const dbPath = dbPathArg || resolveDbPath();
 
   if (!fs.existsSync(dbPath)) {
     console.log(chalk.yellow('No snapshot database found. Run "finlogic snapshot save" first.'));

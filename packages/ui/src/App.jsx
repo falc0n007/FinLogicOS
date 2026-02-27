@@ -10,6 +10,14 @@ import ModelBrowser from './components/ModelBrowser.jsx';
 import ModelRunner from './components/ModelRunner.jsx';
 import ScenariosTab from './components/ScenariosTab.jsx';
 import ScenarioDetail, { CreateScenarioWizard } from './components/ScenarioComparison.jsx';
+import DashboardRoute from './components/DashboardRoute.jsx';
+import PlaybooksSection from './components/PlaybooksSection.jsx';
+import PlaybookIntakeForm from './components/PlaybookIntakeForm.jsx';
+import PlaybookReport from './components/PlaybookReport.jsx';
+import DecisionJournal from './components/DecisionJournal.jsx';
+import JournalEntryForm from './components/JournalEntryForm.jsx';
+import JournalEntryDetail from './components/JournalEntryDetail.jsx';
+import ProfileSwitcher from './components/ProfileSwitcher.jsx';
 import { IconChart } from './icons/IconChart.jsx';
 
 // ---------------------------------------------------------------------------
@@ -65,6 +73,13 @@ function AppShell() {
 
           <nav className="header-nav" aria-label="Main navigation">
             <NavLink
+              to="/"
+              end
+              className={({ isActive }) => `header-nav-link${isActive ? ' header-nav-link--active' : ''}`}
+            >
+              Dashboard
+            </NavLink>
+            <NavLink
               to="/models"
               className={({ isActive }) => `header-nav-link${isActive ? ' header-nav-link--active' : ''}`}
             >
@@ -76,17 +91,37 @@ function AppShell() {
             >
               Scenarios
             </NavLink>
+            <NavLink
+              to="/playbooks"
+              className={({ isActive }) => `header-nav-link${isActive ? ' header-nav-link--active' : ''}`}
+            >
+              Playbooks
+            </NavLink>
+            <NavLink
+              to="/journal"
+              className={({ isActive }) => `header-nav-link${isActive ? ' header-nav-link--active' : ''}`}
+            >
+              Journal
+            </NavLink>
           </nav>
+
+          <ProfileSwitcher />
         </div>
       </header>
 
       <main className="app-main">
         <Routes>
-          <Route path="/" element={<ModelsRoute />} />
+          <Route path="/" element={<DashboardRoute />} />
           <Route path="/models" element={<ModelsRoute />} />
           <Route path="/scenarios" element={<ScenariosTab />} />
           <Route path="/scenarios/new" element={<CreateScenarioWizard />} />
           <Route path="/scenarios/:id" element={<ScenarioDetail />} />
+          <Route path="/playbooks" element={<PlaybooksSection />} />
+          <Route path="/playbooks/:id" element={<PlaybookIntakeForm />} />
+          <Route path="/playbooks/:id/report" element={<PlaybookReport />} />
+          <Route path="/journal" element={<DecisionJournal />} />
+          <Route path="/journal/new" element={<JournalEntryForm />} />
+          <Route path="/journal/:id" element={<JournalEntryDetail />} />
         </Routes>
       </main>
 

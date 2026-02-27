@@ -5,7 +5,8 @@
   "description": "Local-first financial intelligence platform",
   "workspaces": [
     "packages/*",
-    "packages/models/*"
+    "packages/models/*",
+    "packages/playbooks/*"
   ],
   "scripts": {
     "build": "turbo run build",

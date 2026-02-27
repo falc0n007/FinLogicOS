@@ -1,0 +1,99 @@
+id: playbook-inheritance
+name: Inheritance Planning Playbook
+version: 1.0.0
+category: playbook
+event: inheritance
+description: >
+  Analyzes the financial implications of receiving an inheritance, including
+  tax considerations, lump sum vs. annuity decisions, and estate planning.
+region: us
+author: finlogicos-core
+
+intake_fields:
+  - id: inheritance_amount
+    label: Inheritance amount
+    type: number
+    unit: currency
+    required: true
+  - id: asset_type
+    label: Asset type
+    type: enum
+    options: [cash, brokerage, ira, real_estate, business]
+    required: true
+  - id: filing_status
+    label: Filing status
+    type: enum
+    options: [single, married_filing_jointly, married_filing_separately, head_of_household]
+    required: true
+  - id: state
+    label: State of residence
+    type: string
+    required: true
+  - id: relationship_to_decedent
+    label: Relationship to decedent
+    type: enum
+    options: [spouse, child, sibling, other_relative, non_relative]
+    required: true
+  - id: annual_income
+    label: Current annual income
+    type: number
+    unit: currency
+    required: true
+
+models:
+  - id: tax-implications
+    model: inherited-asset-tax-implications
+    section_label: "Tax Implications"
+    input_map:
+      inheritance_amount: intake.inheritance_amount
+      asset_type: intake.asset_type
+      filing_status: intake.filing_status
+      state: intake.state
+      relationship: intake.relationship_to_decedent
+      annual_income: intake.annual_income
+    on_error: warn_and_continue
+
+  - id: lump-sum-vs-annuity
+    model: lump-sum-vs-annuity
+    section_label: "Lump Sum vs. Annuity Analysis"
+    input_map:
+      amount: intake.inheritance_amount
+      annual_income: intake.annual_income
+      filing_status: intake.filing_status
+    condition: "intake.asset_type == 'ira'"
+
+  - id: estate-planning
+    model: estate-planning-checklist-scorer
+    section_label: "Estate Planning Checklist"
+    input_map:
+      inheritance_amount: intake.inheritance_amount
+      relationship: intake.relationship_to_decedent
+      state: intake.state
+
+report_sections:
+  - type: summary_card
+    label: "Estimated Tax Impact"
+    source: tax-implications
+    key: estimated_tax_liability
+
+  - type: model_output
+    model_run_id: tax-implications
+    label: "Tax Analysis"
+
+  - type: model_output
+    model_run_id: lump-sum-vs-annuity
+    label: "Distribution Strategy"
+    hide_if_skipped: true
+
+  - type: model_output
+    model_run_id: estate-planning
+    label: "Estate Planning"
+
+  - type: action_checklist
+    label: "Your Next Steps"
+    items:
+      - "Consult a tax professional about your specific inheritance"
+      - "Understand the tax treatment of the inherited asset type"
+      - "If inherited IRA, understand the 10-year distribution rule"
+      - "Update your own estate plan and beneficiary designations"
+      - "Consider the impact on your overall financial health score"
