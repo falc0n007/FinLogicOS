@@ -23,7 +23,7 @@ export default function DecisionJournal() {
     <div className="journal-page">
       <div className="journal-header">
         <h2>Decision Journal</h2>
-        <button className="btn btn-primary" onClick={() => navigate('/journal/new')}>
+        <button type="button" className="btn-primary" onClick={() => navigate('/journal/new')}>
           New Entry
         </button>
       </div>

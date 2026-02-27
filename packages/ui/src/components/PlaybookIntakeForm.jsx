@@ -75,10 +75,15 @@ export default function PlaybookIntakeForm() {
   if (!playbook) {
     return (
       <div className="playbook-intake-page">
-        <p>Playbook not found.</p>
-        <button className="btn btn-secondary" onClick={() => navigate('/playbooks')}>
+        <button type="button" className="btn-back" onClick={() => navigate('/playbooks')}>
+          <svg className="btn-back-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+            <path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
           Back to Playbooks
         </button>
+        <div className="empty-state">
+          <p className="empty-state-text">Playbook not found.</p>
+        </div>
       </div>
     );
   }
@@ -110,46 +115,57 @@ export default function PlaybookIntakeForm() {
 
   return (
     <div className="playbook-intake-page">
-      <button className="btn btn-secondary" onClick={() => navigate('/playbooks')}>
+      <button type="button" className="btn-back" onClick={() => navigate('/playbooks')}>
+        <svg className="btn-back-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+          <path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
         Back to Playbooks
       </button>
-      <h2>{playbook.name}</h2>
-      <p className="playbook-intake-subtitle">Fill in the fields below, then run the playbook.</p>
+
+      <div className="playbook-intake-header">
+        <h2 className="page-title">{playbook.name}</h2>
+        <p className="playbook-intake-subtitle">Fill in the fields below, then run the playbook.</p>
+      </div>
 
       <form onSubmit={handleRun} className="playbook-intake-form">
-        {playbook.fields.map((field) => (
-          <div key={field.id} className="form-group">
-            <label htmlFor={`pb-${field.id}`}>
-              {field.label}
-              {field.required && <span className="required-star"> *</span>}
-            </label>
-            {field.type === 'enum' ? (
-              <select
-                id={`pb-${field.id}`}
-                value={values[field.id]}
-                onChange={(e) => handleChange(field.id, e.target.value)}
-              >
-                <option value="">Select...</option>
-                {field.options.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt.replace(/_/g, ' ')}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <input
-                id={`pb-${field.id}`}
-                type={field.type === 'number' ? 'number' : 'text'}
-                value={values[field.id]}
-                onChange={(e) => handleChange(field.id, e.target.value)}
-                step={field.type === 'number' ? 'any' : undefined}
-              />
-            )}
-          </div>
-        ))}
+        <div className="playbook-intake-fields">
+          {playbook.fields.map((field) => (
+            <div key={field.id} className="form-field">
+              <label htmlFor={`pb-${field.id}`} className="form-label">
+                {field.label}
+                {field.required && <span className="form-required" aria-hidden="true"> *</span>}
+              </label>
+              {field.type === 'enum' ? (
+                <select
+                  id={`pb-${field.id}`}
+                  className="form-select"
+                  value={values[field.id]}
+                  onChange={(e) => handleChange(field.id, e.target.value)}
+                >
+                  <option value="">Select...</option>
+                  {field.options.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt.replace(/_/g, ' ')}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  id={`pb-${field.id}`}
+                  className="form-input"
+                  type={field.type === 'number' ? 'number' : 'text'}
+                  value={values[field.id]}
+                  onChange={(e) => handleChange(field.id, e.target.value)}
+                  step={field.type === 'number' ? 'any' : undefined}
+                  placeholder={field.default !== undefined ? String(field.default) : ''}
+                />
+              )}
+            </div>
+          ))}
+        </div>
 
         <div className="form-actions">
-          <button type="submit" className="btn btn-primary" disabled={!allRequiredFilled}>
+          <button type="submit" className="btn-primary" disabled={!allRequiredFilled}>
             Run Playbook
           </button>
         </div>

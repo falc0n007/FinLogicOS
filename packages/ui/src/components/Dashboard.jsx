@@ -40,7 +40,7 @@ export default function Dashboard({ onRunHealthScore, onSelectModel }) {
       <section className="dashboard-score-section" aria-label="Financial health score">
         <div className="dashboard-score-header">
           <div>
-            <h2 className="section-title">Financial Health Score</h2>
+            <h2 className="page-title">Financial Health Score</h2>
             <p className="section-subtitle">
               {hasScore
                 ? 'Your composite score across six financial dimensions.'
