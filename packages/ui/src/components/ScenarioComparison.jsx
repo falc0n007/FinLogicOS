@@ -131,18 +131,18 @@ export function CreateScenarioWizard() {
       parentId: baseline?.id ?? null,
       scenarioMeta: { label: scenarioName.trim() },
     });
-    navigate('/scenarios');
+    navigate('/simulations/scenarios');
   }
 
   function handleDiscard() {
-    navigate('/scenarios');
+    navigate('/simulations/scenarios');
   }
 
   return (
     <div className="scenario-wizard">
       <div className="wizard-header">
-        <button className="btn-back" onClick={() => navigate('/scenarios')}>
-          ← Scenarios
+        <button className="btn-back" onClick={() => navigate('/simulations/scenarios')}>
+          ← Saved Scenarios
         </button>
         <h2 className="runner-title">New Scenario</h2>
         <div className="wizard-steps" aria-label="Wizard progress">
@@ -343,7 +343,7 @@ export default function ScenarioDetail() {
     return (
       <div className="scenarios-empty">
         <p className="scenarios-empty-title">Scenario not found</p>
-        <button className="btn-primary" onClick={() => navigate('/scenarios')}>
+        <button className="btn-primary" onClick={() => navigate('/simulations/scenarios')}>
           Back to Scenarios
         </button>
       </div>
@@ -355,7 +355,7 @@ export default function ScenarioDetail() {
   return (
     <div className="scenario-detail">
       <div className="runner-header">
-        <button className="btn-back" onClick={() => navigate('/scenarios')}>
+        <button className="btn-back" onClick={() => navigate('/simulations/scenarios')}>
           ← All Scenarios
         </button>
         <div className="runner-title-group">

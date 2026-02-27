@@ -12,6 +12,8 @@ const CATEGORY_LABELS = {
   investment: 'Investment',
   debt: 'Debt',
   tax: 'Tax',
+  health: 'Health',
+  scenario: 'Scenario',
 };
 
 export default function ModelCard({ model, onSelect }) {
@@ -40,7 +42,7 @@ export default function ModelCard({ model, onSelect }) {
       </div>
 
       <div className="model-card-footer">
-        <span className="model-card-cta">Run model &rarr;</span>
+        <span className="model-card-cta">Open simulation &rarr;</span>
       </div>
     </button>
   );

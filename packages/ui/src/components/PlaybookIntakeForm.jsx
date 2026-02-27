@@ -75,7 +75,7 @@ export default function PlaybookIntakeForm() {
   if (!playbook) {
     return (
       <div className="playbook-intake-page">
-        <button type="button" className="btn-back" onClick={() => navigate('/playbooks')}>
+        <button type="button" className="btn-back" onClick={() => navigate('/strategy')}>
           <svg className="btn-back-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
@@ -110,12 +110,12 @@ export default function PlaybookIntakeForm() {
       }
     }
     localStorage.setItem(intakeKey, JSON.stringify(coerced));
-    navigate(`/playbooks/${id}/report`);
+    navigate(`/strategy/playbooks/${id}/report`);
   }
 
   return (
     <div className="playbook-intake-page">
-      <button type="button" className="btn-back" onClick={() => navigate('/playbooks')}>
+      <button type="button" className="btn-back" onClick={() => navigate('/strategy')}>
         <svg className="btn-back-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
           <path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
         </svg>

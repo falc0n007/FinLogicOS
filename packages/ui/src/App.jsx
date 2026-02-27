@@ -1,17 +1,17 @@
-import { useState } from 'react';
 import {
   HashRouter,
   Routes,
   Route,
   NavLink,
-  useNavigate,
+  Navigate,
 } from 'react-router-dom';
-import ModelBrowser from './components/ModelBrowser.jsx';
-import ModelRunner from './components/ModelRunner.jsx';
+import OverviewRoute from './components/OverviewRoute.jsx';
+import HealthRoute from './components/HealthRoute.jsx';
+import StrategyRoute from './components/StrategyRoute.jsx';
+import SimulationsRoute from './components/SimulationsRoute.jsx';
+import InsightsRoute from './components/InsightsRoute.jsx';
 import ScenariosTab from './components/ScenariosTab.jsx';
 import ScenarioDetail, { CreateScenarioWizard } from './components/ScenarioComparison.jsx';
-import DashboardRoute from './components/DashboardRoute.jsx';
-import PlaybooksSection from './components/PlaybooksSection.jsx';
 import PlaybookIntakeForm from './components/PlaybookIntakeForm.jsx';
 import PlaybookReport from './components/PlaybookReport.jsx';
 import DecisionJournal from './components/DecisionJournal.jsx';
@@ -19,40 +19,6 @@ import JournalEntryForm from './components/JournalEntryForm.jsx';
 import JournalEntryDetail from './components/JournalEntryDetail.jsx';
 import ProfileSwitcher from './components/ProfileSwitcher.jsx';
 import { IconChart } from './icons/IconChart.jsx';
-
-// ---------------------------------------------------------------------------
-// Models route — wraps ModelBrowser + ModelRunner with local state
-// ---------------------------------------------------------------------------
-
-function ModelsRoute() {
-  const [selectedModel, setSelectedModel] = useState(null);
-  const [results, setResults] = useState(null);
-
-  function handleSelectModel(model) {
-    setSelectedModel(model);
-    setResults(null);
-  }
-
-  function handleResults(output) {
-    setResults(output);
-  }
-
-  function handleBack() {
-    setSelectedModel(null);
-    setResults(null);
-  }
-
-  return selectedModel === null ? (
-    <ModelBrowser onSelect={handleSelectModel} />
-  ) : (
-    <ModelRunner
-      model={selectedModel}
-      results={results}
-      onResults={handleResults}
-      onBack={handleBack}
-    />
-  );
-}
 
 // ---------------------------------------------------------------------------
 // App shell with navigation
@@ -67,7 +33,9 @@ function AppShell() {
             <IconChart className="header-logo-icon" aria-hidden="true" />
             <div>
               <h1 className="header-title">FinLogicOS</h1>
-              <p className="header-subtitle">Local-first financial intelligence platform</p>
+              <p className="header-subtitle">
+                Your financial operating system. Private. Auditable. Yours.
+              </p>
             </div>
           </div>
 
@@ -77,25 +45,31 @@ function AppShell() {
               end
               className={({ isActive }) => `header-nav-link${isActive ? ' header-nav-link--active' : ''}`}
             >
-              Dashboard
+              Overview
             </NavLink>
             <NavLink
-              to="/models"
+              to="/health"
               className={({ isActive }) => `header-nav-link${isActive ? ' header-nav-link--active' : ''}`}
             >
-              Models
+              Health
             </NavLink>
             <NavLink
-              to="/scenarios"
+              to="/strategy"
               className={({ isActive }) => `header-nav-link${isActive ? ' header-nav-link--active' : ''}`}
             >
-              Scenarios
+              Strategy
             </NavLink>
             <NavLink
-              to="/playbooks"
+              to="/simulations"
               className={({ isActive }) => `header-nav-link${isActive ? ' header-nav-link--active' : ''}`}
             >
-              Playbooks
+              Simulations
+            </NavLink>
+            <NavLink
+              to="/insights"
+              className={({ isActive }) => `header-nav-link${isActive ? ' header-nav-link--active' : ''}`}
+            >
+              Insights
             </NavLink>
             <NavLink
               to="/journal"
@@ -111,22 +85,33 @@ function AppShell() {
 
       <main className="app-main">
         <Routes>
-          <Route path="/" element={<DashboardRoute />} />
-          <Route path="/models" element={<ModelsRoute />} />
-          <Route path="/scenarios" element={<ScenariosTab />} />
-          <Route path="/scenarios/new" element={<CreateScenarioWizard />} />
-          <Route path="/scenarios/:id" element={<ScenarioDetail />} />
-          <Route path="/playbooks" element={<PlaybooksSection />} />
-          <Route path="/playbooks/:id" element={<PlaybookIntakeForm />} />
-          <Route path="/playbooks/:id/report" element={<PlaybookReport />} />
+          <Route path="/" element={<OverviewRoute />} />
+          <Route path="/health" element={<HealthRoute />} />
+          <Route path="/strategy" element={<StrategyRoute />} />
+          <Route path="/strategy/playbooks/:id" element={<PlaybookIntakeForm />} />
+          <Route path="/strategy/playbooks/:id/report" element={<PlaybookReport />} />
+          <Route path="/simulations" element={<SimulationsRoute />} />
+          <Route path="/simulations/scenarios" element={<ScenariosTab />} />
+          <Route path="/simulations/scenarios/new" element={<CreateScenarioWizard />} />
+          <Route path="/simulations/scenarios/:id" element={<ScenarioDetail />} />
+          <Route path="/insights" element={<InsightsRoute />} />
           <Route path="/journal" element={<DecisionJournal />} />
           <Route path="/journal/new" element={<JournalEntryForm />} />
           <Route path="/journal/:id" element={<JournalEntryDetail />} />
+
+          <Route path="/dashboard" element={<Navigate to="/" replace />} />
+          <Route path="/models" element={<Navigate to="/simulations" replace />} />
+          <Route path="/scenarios" element={<Navigate to="/simulations/scenarios" replace />} />
+          <Route path="/scenarios/new" element={<Navigate to="/simulations/scenarios/new" replace />} />
+          <Route path="/scenarios/:id" element={<Navigate to="/simulations/scenarios" replace />} />
+          <Route path="/playbooks" element={<Navigate to="/strategy" replace />} />
+          <Route path="/playbooks/:id" element={<Navigate to="/strategy" replace />} />
+          <Route path="/playbooks/:id/report" element={<Navigate to="/strategy" replace />} />
         </Routes>
       </main>
 
       <footer className="app-footer">
-        <p>FinLogicOS v0.1.0 &mdash; All computations run locally in your browser.</p>
+        <p>FinLogicOS v0.1.0 &mdash; Local-first financial intelligence, fully on-device.</p>
       </footer>
     </div>
   );

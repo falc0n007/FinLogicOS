@@ -17,7 +17,7 @@ export default function PlaybookReport() {
     return (
       <div className="playbook-report-page">
         <p>No intake data found. Please fill in the playbook form first.</p>
-        <button className="btn btn-secondary" onClick={() => navigate(`/playbooks/${id}`)}>
+        <button className="btn btn-secondary" onClick={() => navigate(`/strategy/playbooks/${id}`)}>
           Go to Intake Form
         </button>
       </div>
@@ -31,7 +31,7 @@ export default function PlaybookReport() {
 
   return (
     <div className="playbook-report-page">
-      <button className="btn btn-secondary" onClick={() => navigate('/playbooks')}>
+      <button className="btn btn-secondary" onClick={() => navigate('/strategy')}>
         Back to Playbooks
       </button>
 

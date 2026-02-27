@@ -131,7 +131,13 @@ function FormField({ input, value, onChange, error }) {
 const CACHE_DEBOUNCE_MS = 600;
 const COMPOUND_INTEREST_RUN_DEBOUNCE_MS = 280;
 
-export default function ModelRunner({ model, results, onResults, onBack }) {
+export default function ModelRunner({
+  model,
+  results,
+  onResults,
+  onBack,
+  prefillValues = null,
+}) {
   const defaults = buildInitialValues(model.inputs);
   const [values, setValues] = useState(() =>
     mergeCachedWithDefaults(model.inputs, getCachedInputs(model.id), defaults)
@@ -141,6 +147,11 @@ export default function ModelRunner({ model, results, onResults, onBack }) {
   const [isRunning, setIsRunning] = useState(false);
   const cacheTimeoutRef = useRef(null);
   const autoRunTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    if (!prefillValues) return;
+    setValues((prev) => ({ ...prev, ...prefillValues }));
+  }, [prefillValues]);
 
   // Persist inputs to localStorage (debounced) so partial fills survive refresh
   useEffect(() => {
@@ -257,7 +268,7 @@ export default function ModelRunner({ model, results, onResults, onBack }) {
       <div className="runner-header">
         <button className="btn-back" onClick={onBack} aria-label="Back to model list">
           <IconArrowLeft className="btn-back-icon" aria-hidden="true" />
-          All Models
+          All Simulations
         </button>
         <div className="runner-title-group">
           <h2 className="runner-title">{model.name}</h2>

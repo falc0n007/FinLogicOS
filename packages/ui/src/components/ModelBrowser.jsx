@@ -1,4 +1,5 @@
 import { MODELS } from '../data/models.js';
+import { latestSnapshot } from '../data/snapshots.js';
 import ModelCard from './ModelCard.jsx';
 
 export default function ModelBrowser({ onSelect }) {
@@ -15,6 +16,14 @@ export default function ModelBrowser({ onSelect }) {
         {MODELS.map((model) => (
           <div key={model.id} role="listitem">
             <ModelCard model={model} onSelect={onSelect} />
+            <div className="model-preview-meta">
+              <span>{model.inputs.filter((input) => input.required).length} required inputs</span>
+              <span>
+                {latestSnapshot(model.id)
+                  ? `Last run ${new Date(latestSnapshot(model.id).created_at).toLocaleDateString()}`
+                  : 'Not run yet'}
+              </span>
+            </div>
           </div>
         ))}
       </div>

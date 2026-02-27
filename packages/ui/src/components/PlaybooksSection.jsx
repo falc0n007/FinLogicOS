@@ -69,7 +69,7 @@ export default function PlaybooksSection() {
           <div
             key={pb.id}
             className={`playbook-card${pb.available ? '' : ' playbook-card--coming-soon'}`}
-            onClick={() => pb.available && navigate(`/playbooks/${pb.id}`)}
+            onClick={() => pb.available && navigate(`/strategy/playbooks/${pb.id}`)}
             role={pb.available ? 'button' : undefined}
             tabIndex={pb.available ? 0 : undefined}
           >

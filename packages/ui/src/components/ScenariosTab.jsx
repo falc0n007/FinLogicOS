@@ -88,7 +88,7 @@ export default function ScenariosTab() {
         </div>
         <button
           className="btn-primary"
-          onClick={() => navigate('/scenarios/new')}
+          onClick={() => navigate('/simulations/scenarios/new')}
           aria-label="Create a new scenario"
         >
           + New Scenario
@@ -101,7 +101,7 @@ export default function ScenariosTab() {
           <p className="scenarios-empty-sub">
             Run a scenario model and click "Save Scenario" to persist it here.
           </p>
-          <button className="btn-primary" onClick={() => navigate('/scenarios/new')}>
+          <button className="btn-primary" onClick={() => navigate('/simulations/scenarios/new')}>
             Create your first scenario
           </button>
         </div>
@@ -113,7 +113,7 @@ export default function ScenariosTab() {
               scenario={scenario}
               children={children}
               deleteConfirm={deleteConfirm}
-              onView={(id) => navigate(`/scenarios/${id}`)}
+              onView={(id) => navigate(`/simulations/scenarios/${id}`)}
               onDelete={handleDelete}
               onCancelDelete={handleCancelDelete}
             />
