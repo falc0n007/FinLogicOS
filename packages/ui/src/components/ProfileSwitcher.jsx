@@ -20,20 +20,33 @@ function ProfileAvatar({ profile, size = 32 }) {
       style={{
         width: size,
         height: size,
-        borderRadius: '50%',
-        background: profile.color || '#4F8EF7',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: '#fff',
+        background: profile.color || 'var(--color-accent)',
         fontSize: size * 0.4,
-        fontWeight: 600,
-        cursor: 'pointer',
       }}
       title={profile.display_name}
     >
       {initials}
     </div>
+  );
+}
+
+function IconCheck() {
+  return (
+    <span className="profile-dropdown-check" aria-hidden="true">
+      <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M13 4L6 11 3 8" />
+      </svg>
+    </span>
+  );
+}
+
+function IconPlus() {
+  return (
+    <span className="profile-dropdown-add-icon" aria-hidden="true">
+      <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M8 3v10M3 8h10" />
+      </svg>
+    </span>
   );
 }
 
@@ -79,17 +92,14 @@ export default function ProfileSwitcher() {
   }
 
   return (
-    <div className="profile-switcher" ref={dropdownRef} style={{ position: 'relative' }}>
+    <div className="profile-switcher" ref={dropdownRef}>
       <button
+        type="button"
         className="profile-switcher-trigger"
         onClick={() => setOpen(!open)}
         aria-label="Switch profile"
-        style={{
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          padding: 4,
-        }}
+        aria-expanded={open}
+        aria-haspopup="true"
       >
         <ProfileAvatar profile={activeProfile} />
       </button>
@@ -100,12 +110,13 @@ export default function ProfileSwitcher() {
           {profiles.map((p) => (
             <button
               key={p.id}
+              type="button"
               className={`profile-dropdown-item${p.id === activeId ? ' profile-dropdown-item--active' : ''}`}
               onClick={() => handleSelect(p.id)}
             >
               <ProfileAvatar profile={p} size={24} />
               <span className="profile-dropdown-name">{p.display_name}</span>
-              {p.id === activeId && <span className="profile-dropdown-check">*</span>}
+              {p.id === activeId && <IconCheck />}
             </button>
           ))}
 
@@ -125,10 +136,12 @@ export default function ProfileSwitcher() {
             </form>
           ) : (
             <button
+              type="button"
               className="profile-dropdown-item profile-dropdown-add"
               onClick={() => setCreating(true)}
             >
-              + New Profile
+              <IconPlus />
+              New Profile
             </button>
           )}
         </div>
