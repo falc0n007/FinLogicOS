@@ -4,7 +4,9 @@ import {
   Route,
   NavLink,
   Navigate,
+  useLocation,
 } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import OverviewRoute from './components/OverviewRoute.jsx';
 import HealthRoute from './components/HealthRoute.jsx';
 import StrategyRoute from './components/StrategyRoute.jsx';
@@ -19,12 +21,31 @@ import JournalEntryForm from './components/JournalEntryForm.jsx';
 import JournalEntryDetail from './components/JournalEntryDetail.jsx';
 import ProfileSwitcher from './components/ProfileSwitcher.jsx';
 import { IconChart } from './icons/IconChart.jsx';
+import { getAlerts, getInsights, INSIGHTS_DISMISSED_EVENT } from './data/insightEngine.js';
 
 // ---------------------------------------------------------------------------
 // App shell with navigation
 // ---------------------------------------------------------------------------
 
 function AppShell() {
+  const location = useLocation();
+  const [alertsCount, setAlertsCount] = useState(() => getAlerts(getInsights()).length);
+
+  useEffect(() => {
+    function refreshAlertsCount() {
+      setAlertsCount(getAlerts(getInsights()).length);
+    }
+
+    refreshAlertsCount();
+    window.addEventListener(INSIGHTS_DISMISSED_EVENT, refreshAlertsCount);
+    window.addEventListener('storage', refreshAlertsCount);
+
+    return () => {
+      window.removeEventListener(INSIGHTS_DISMISSED_EVENT, refreshAlertsCount);
+      window.removeEventListener('storage', refreshAlertsCount);
+    };
+  }, [location.key]);
+
   return (
     <div className="app">
       <header className="app-header">
@@ -67,9 +88,18 @@ function AppShell() {
             </NavLink>
             <NavLink
               to="/insights"
-              className={({ isActive }) => `header-nav-link${isActive ? ' header-nav-link--active' : ''}`}
+              className={({ isActive }) =>
+                `header-nav-link header-nav-link--with-badge${
+                  isActive ? ' header-nav-link--active' : ''
+                }`
+              }
             >
               Insights
+              {alertsCount > 0 && (
+                <span className="header-nav-badge" aria-label={`${alertsCount} alerts`}>
+                  {alertsCount}
+                </span>
+              )}
             </NavLink>
             <NavLink
               to="/journal"

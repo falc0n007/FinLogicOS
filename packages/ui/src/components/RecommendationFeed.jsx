@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { dismissInsight } from '../data/insightEngine.js';
 
@@ -16,8 +17,13 @@ export default function RecommendationFeed({
   emptyBody = 'You are in a stable state. Run a simulation or update your health score to generate new guidance.',
 }) {
   const navigate = useNavigate();
+  const [hiddenIds, setHiddenIds] = useState([]);
+  const visibleInsights = useMemo(
+    () => insights.filter((insight) => !hiddenIds.includes(insight.id)),
+    [insights, hiddenIds],
+  );
 
-  if (insights.length === 0) {
+  if (visibleInsights.length === 0) {
     return (
       <section className="recommendation-feed">
         <div className="recommendation-feed-header">
@@ -39,7 +45,7 @@ export default function RecommendationFeed({
       </div>
 
       <div className="recommendation-list" role="list">
-        {insights.map((insight) => {
+        {visibleInsights.map((insight) => {
           const primaryModel = insight.suggestedModelIds?.[0] ?? null;
           return (
             <article
@@ -90,7 +96,10 @@ export default function RecommendationFeed({
                 <button
                   type="button"
                   className="btn-ghost btn-sm"
-                  onClick={() => dismissInsight(insight.id, healthSnapshotId)}
+                  onClick={() => {
+                    dismissInsight(insight.id, healthSnapshotId);
+                    setHiddenIds((prev) => [...prev, insight.id]);
+                  }}
                 >
                   Dismiss
                 </button>

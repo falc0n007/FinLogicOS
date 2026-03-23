@@ -923,10 +923,29 @@ input, select, textarea {
   gap: var(--spacing-xl);
 }
 
+.results-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
 .results-title {
   font-size: 1.125rem;
   font-weight: 600;
   letter-spacing: -0.01em;
+}
+
+.results-visualize-link {
+  font-size: 0.875rem;
+  color: var(--color-accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.results-visualize-link:hover {
+  text-decoration: underline;
 }
 
 /* Summary table */
@@ -977,6 +996,141 @@ input, select, textarea {
   font-size: 0.9375rem;
   font-weight: 600;
   color: var(--color-text) !important;
+}
+
+.results-value--structured {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  text-align: left !important;
+}
+
+.results-structured-list {
+  display: grid;
+  gap: 6px;
+}
+
+.results-structured-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+}
+
+.results-actions-list {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 8px;
+}
+
+.results-actions-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+}
+
+.results-item-label {
+  color: var(--color-text);
+  font-size: 0.875rem;
+  line-height: 1.35;
+}
+
+.results-item-chip {
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.results-item-chip--accent {
+  border-color: rgba(14, 165, 233, 0.35);
+  background: rgba(14, 165, 233, 0.14);
+  color: #7dd3fc;
+}
+
+.results-item-chip--high {
+  border-color: rgba(16, 185, 129, 0.4);
+  background: rgba(16, 185, 129, 0.15);
+  color: #6ee7b7;
+}
+
+.results-item-chip--medium {
+  border-color: rgba(14, 165, 233, 0.35);
+  background: rgba(14, 165, 233, 0.14);
+  color: #7dd3fc;
+}
+
+.results-item-chip--low {
+  border-color: rgba(245, 158, 11, 0.4);
+  background: rgba(245, 158, 11, 0.14);
+  color: #fcd34d;
+}
+
+.results-item-chip--critical {
+  border-color: rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.14);
+  color: #fca5a5;
+}
+
+.results-dimension-row {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+}
+
+.results-dimension-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+}
+
+.results-dimension-links {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-left: 2px;
+}
+
+.results-dimension-link {
+  font-size: 0.75rem;
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.results-dimension-link:hover {
+  text-decoration: underline;
+}
+
+.results-dimension-link-sep {
+  color: var(--color-text-muted);
+  font-size: 0.7rem;
+}
+
+.results-score-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-sm) var(--spacing-md);
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+.results-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.results-legend-chip {
+  padding: 1px 6px;
 }
 
 /* Strategy grid */
@@ -1065,10 +1219,14 @@ input, select, textarea {
   font-size: 0.9375rem;
   font-weight: 600;
   color: var(--color-text-muted);
-  margin-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-xs);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-size: 0.75rem;
+}
+
+.results-chart-subtitle {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  margin: 0 0 var(--spacing-md) 0;
 }
 
 /* Compound interest summary cards + growth chart */
@@ -1851,6 +2009,11 @@ input, select, textarea {
   color: var(--color-accent);
   background: var(--color-accent-dim);
   border-color: rgba(14, 165, 233, 0.25);
+}
+
+.header-nav-link--with-badge {
+  position: relative;
+  padding-right: calc(var(--spacing-md) + 10px);
 }
 
 /* ============================================================
@@ -2865,6 +3028,31 @@ input, select, textarea {
   padding: var(--spacing-sm) var(--spacing-md);
 }
 
+.alerts-strip-actions {
+  margin-top: var(--spacing-xs);
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.header-nav-badge {
+  position: absolute;
+  top: 4px;
+  right: 5px;
+  border-radius: 999px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+  min-width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  line-height: 1;
+  font-weight: 600;
+  pointer-events: none;
+}
+
 .recommendation-feed {
   display: flex;
   flex-direction: column;
@@ -2963,6 +3151,11 @@ input, select, textarea {
   gap: var(--spacing-sm);
 }
 
+.health-explorer-formula {
+  color: var(--color-text-muted);
+  font-size: var(--text-body-sm);
+}
+
 .insights-summary {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2994,6 +3187,16 @@ input, select, textarea {
   display: flex;
   justify-content: space-between;
   gap: var(--spacing-sm);
+}
+
+.simulations-tab {
+  border: 1px solid var(--color-border);
+}
+
+.simulations-tab--active {
+  border-color: var(--color-accent);
+  color: var(--color-text);
+  background: var(--color-accent-dim);
 }
 
 @media (max-width: 880px) {
