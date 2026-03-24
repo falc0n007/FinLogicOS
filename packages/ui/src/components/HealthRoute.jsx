@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useMemo, useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { listSnapshots } from '../data/snapshots.js';
 import { MODELS } from '../data/models.js';
 import HealthScoreWidget from './HealthScoreWidget.jsx';
@@ -12,11 +12,19 @@ const EXPLAINER_ID = 'health-score-explainer';
 
 export default function HealthRoute() {
   const navigate = useNavigate();
+  const location = useLocation();
   const snapshots = useMemo(() => listSnapshots(HEALTH_SCORE_ID), []);
   const latest = snapshots.length > 0 ? snapshots[snapshots.length - 1] : null;
   const score = latest?.outputs;
   const hasScore = Boolean(score);
   const [selectedDimensionKey, setSelectedDimensionKey] = useState(null);
+
+  useEffect(() => {
+    const highlight = location.state?.highlightDimension;
+    if (highlight && hasScore && score?.dimensions?.[highlight]) {
+      setSelectedDimensionKey(highlight);
+    }
+  }, [location.state?.highlightDimension, hasScore, score?.dimensions]);
 
   const explainerModel = MODELS.find((m) => m.id === EXPLAINER_ID);
   const explanation = useMemo(() => {

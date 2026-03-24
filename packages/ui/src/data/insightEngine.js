@@ -6,6 +6,7 @@ import { profileKey } from './profileStore.js';
 
 const HEALTH_SCORE_ID = 'financial-health-score';
 const DISMISSED_KEY = profileKey('finlogic-dismissed-insights-v1');
+export const INSIGHTS_DISMISSED_EVENT = 'finlogic:insights-dismissed-changed';
 
 function daysSince(isoDate) {
   if (!isoDate) return Number.POSITIVE_INFINITY;
@@ -33,6 +34,7 @@ function readDismissed() {
 function writeDismissed(payload) {
   try {
     localStorage.setItem(DISMISSED_KEY, JSON.stringify(payload));
+    window.dispatchEvent(new Event(INSIGHTS_DISMISSED_EVENT));
   } catch {
     // ignore localStorage failures
   }
@@ -47,6 +49,7 @@ export function dismissInsight(insightId, scoreSnapshotId) {
 export function clearDismissedInsights() {
   try {
     localStorage.removeItem(DISMISSED_KEY);
+    window.dispatchEvent(new Event(INSIGHTS_DISMISSED_EVENT));
   } catch {
     // ignore localStorage failures
   }

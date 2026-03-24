@@ -60,6 +60,24 @@ export default function OverviewRoute() {
             <div key={alert.id} className="alerts-strip-item">
               <strong>{alert.title}</strong>
               <span>{alert.body}</span>
+              <div className="alerts-strip-actions">
+                {alert.suggestedModelIds?.[0] && (
+                  <button
+                    type="button"
+                    className="btn-secondary btn-sm"
+                    onClick={() => handleRunModel(alert.suggestedModelIds[0])}
+                  >
+                    Run Now
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="btn-ghost btn-sm"
+                  onClick={() => navigate('/insights')}
+                >
+                  Review
+                </button>
+              </div>
             </div>
           ))}
         </section>

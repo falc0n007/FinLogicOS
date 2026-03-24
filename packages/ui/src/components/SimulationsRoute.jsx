@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import ModelBrowser from './ModelBrowser.jsx';
 import ModelRunner from './ModelRunner.jsx';
 import { getModelById, getPrefillFromHealth } from '../data/simulationEngine.js';
@@ -48,6 +48,23 @@ export default function SimulationsRoute() {
           </p>
         </div>
         <div className="simulations-header-actions">
+          <NavLink
+            to="/simulations"
+            end
+            className={({ isActive }) =>
+              `btn-ghost ${isActive ? 'simulations-tab simulations-tab--active' : 'simulations-tab'}`
+            }
+          >
+            Models
+          </NavLink>
+          <NavLink
+            to="/simulations/scenarios"
+            className={({ isActive }) =>
+              `btn-ghost ${isActive ? 'simulations-tab simulations-tab--active' : 'simulations-tab'}`
+            }
+          >
+            Scenarios
+          </NavLink>
           <button
             type="button"
             className="btn-secondary"

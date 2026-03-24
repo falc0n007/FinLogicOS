@@ -1,9 +1,12 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   LineChart,
   Line,
   AreaChart,
   Area,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   Tooltip,
@@ -12,6 +15,7 @@ import {
   Legend,
   Brush,
   ReferenceLine,
+  Cell,
 } from 'recharts';
 
 // ---------------------------------------------------------------------------
@@ -31,11 +35,96 @@ function formatPercent(value) {
   return `${Number(value).toFixed(2)}%`;
 }
 
+function labelFromKey(key) {
+  return String(key)
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+/** Score tier for chip color: 75+ strong, 50-75 ok, 25-50 low, under 25 critical */
+function scoreTier(score) {
+  if (typeof score !== 'number') return 'medium';
+  if (score >= 75) return 'high';
+  if (score >= 50) return 'medium';
+  if (score >= 25) return 'low';
+  return 'critical';
+}
+
+const LOW_SCORE_LINK_THRESHOLD = 40;
+
 function formatValue(value, format) {
   if (format === 'currency') return formatCurrency(value);
   if (format === 'percent') return formatPercent(value);
+  if (format === 'score' && typeof value === 'number') return String(Math.round(value));
   if (typeof value === 'number') return value.toLocaleString('en-US');
+  if (value && typeof value === 'object') return JSON.stringify(value);
   return String(value);
+}
+
+function renderFormattedValue(value, format) {
+  if (format === 'dimensions' && value && typeof value === 'object') {
+    const rows = Object.entries(value);
+    if (!rows.length) return '—';
+    return (
+      <div className="results-structured-list" role="list" aria-label="Dimension scores">
+        {rows.map(([key, dim]) => {
+          const numScore = typeof dim?.score === 'number' ? dim.score : null;
+          const score = numScore !== null ? String(Math.round(numScore)) : String(dim);
+          const tier = scoreTier(numScore);
+          const showImproveLinks = numScore !== null && numScore < LOW_SCORE_LINK_THRESHOLD;
+          return (
+            <div key={key} className="results-structured-item results-dimension-row" role="listitem">
+              <div className="results-dimension-main">
+                <span className="results-item-label">{labelFromKey(key)}</span>
+                <span className={`results-item-chip results-item-chip--${tier}`} title={`Score ${score} out of 100`}>
+                  {score}
+                </span>
+              </div>
+              {showImproveLinks && (
+                <div className="results-dimension-links">
+                  <Link to="/journal/new" className="results-dimension-link">
+                    Log decision
+                  </Link>
+                  <span className="results-dimension-link-sep" aria-hidden="true">·</span>
+                  <Link to="/health" className="results-dimension-link" state={{ highlightDimension: key }}>
+                    How to improve
+                  </Link>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  if (format === 'actions' && Array.isArray(value)) {
+    if (!value.length) return '—';
+    return (
+      <ol className="results-actions-list" aria-label="Recommended actions">
+        {value.map((action, index) => {
+          const label = action?.label ?? `Action ${index + 1}`;
+          const delta = action?.projected_total_score_delta;
+          const hasDelta = typeof delta === 'number';
+          const deltaSign = hasDelta && delta >= 0 ? '+' : '';
+
+          return (
+            <li key={action?.action_id ?? `${label}-${index}`} className="results-actions-item">
+              <span className="results-item-label">{label}</span>
+              {hasDelta && (
+                <span className="results-item-chip results-item-chip--accent">
+                  {deltaSign}
+                  {Math.round(delta)} pts
+                </span>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+    );
+  }
+
+  return formatValue(value, format);
 }
 
 // ---------------------------------------------------------------------------
@@ -282,6 +371,88 @@ function YearByYearChart({ data }) {
 }
 
 // ---------------------------------------------------------------------------
+// Health score — dimension contributions to overall score
+// ---------------------------------------------------------------------------
+
+const TIER_FILL = {
+  high: 'var(--color-investment)',
+  medium: 'var(--color-accent)',
+  low: 'var(--color-debt)',
+  critical: 'var(--color-error)',
+};
+
+function HealthScoreContributionChart({ results }) {
+  const dimensions = results?.dimensions;
+  const totalScore = typeof results?.total_score === 'number' ? results.total_score : null;
+  if (!dimensions || typeof dimensions !== 'object' || totalScore === null) return null;
+
+  const data = Object.entries(dimensions).map(([key, dim]) => {
+    const score = typeof dim?.score === 'number' ? dim.score : 0;
+    const weight = typeof dim?.weight === 'number' ? dim.weight : 0;
+    const contribution = Math.round(score * weight);
+    return {
+      key,
+      name: dim?.label || labelFromKey(key),
+      contribution,
+      score,
+      weightPct: Math.round(weight * 100),
+      tier: scoreTier(score),
+    };
+  });
+
+  if (data.length === 0) return null;
+
+  const tooltipContent = ({ active, payload }) => {
+    if (!active || !payload?.length) return null;
+    const { name, score, contribution, weightPct } = payload[0].payload;
+    return (
+      <div className="principal-chart-tooltip">
+        <div className="principal-chart-tooltip-row">
+          <span>Dimension</span>
+          <strong>{name}</strong>
+        </div>
+        <div className="principal-chart-tooltip-row">
+          <span>Score</span>
+          <strong>{score} / 100</strong>
+        </div>
+        <div className="principal-chart-tooltip-row">
+          <span>Weight</span>
+          <strong>{weightPct}%</strong>
+        </div>
+        <div className="principal-chart-tooltip-row">
+          <span>Contribution to total</span>
+          <strong>{contribution} pts</strong>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="results-chart health-contribution-chart" aria-label="Dimension contributions to health score">
+      <h3 className="results-chart-title">Dimension contributions to overall score</h3>
+      <p className="results-chart-subtitle">Each bar shows how many points (out of 100) this dimension adds. Total: {totalScore}</p>
+      <ResponsiveContainer width="100%" height={280}>
+        <BarChart
+          data={data}
+          layout="vertical"
+          margin={{ top: 8, right: 24, left: 8, bottom: 8 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" horizontal={false} />
+          <XAxis type="number" domain={[0, 25]} stroke="var(--color-text-muted)" tick={{ fill: 'var(--color-text-muted)', fontSize: 11 }} />
+          <YAxis type="category" dataKey="name" width={140} stroke="var(--color-text-muted)" tick={{ fill: 'var(--color-text-muted)', fontSize: 11 }} />
+          <Tooltip content={tooltipContent} cursor={{ fill: 'var(--color-surface-2)' }} />
+          <Bar dataKey="contribution" name="Points" radius={[0, 4, 4, 0]} maxBarSize={28}>
+            {data.map((entry, index) => (
+              <Cell key={entry.key} fill={TIER_FILL[entry.tier] ?? TIER_FILL.medium} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Compound interest growth — summary cards + area chart
 // ---------------------------------------------------------------------------
 
@@ -412,9 +583,19 @@ export default function ResultsDisplay({ model, results }) {
   const isCompoundInterest = model.id === 'compound-interest-growth';
   const compoundYearByYear = isCompoundInterest && Array.isArray(results.yearByYear) ? results.yearByYear : null;
 
+  const isHealthScore = model.id === 'financial-health-score';
+  const hasDimensions = isHealthScore && results?.dimensions && typeof results.dimensions === 'object';
+
   return (
     <div className="results-display" aria-label="Model results">
-      <h3 className="results-title">Results</h3>
+      <div className="results-title-row">
+        <h3 className="results-title">Results</h3>
+        {isHealthScore && (
+          <Link to="/health" className="results-visualize-link">
+            Visualize health score
+          </Link>
+        )}
+      </div>
 
       {/* Compound interest: minimal summary cards + growth chart */}
       {isCompoundInterest && (
@@ -425,6 +606,32 @@ export default function ResultsDisplay({ model, results }) {
           )}
         </>
       )}
+
+      {/* Health score: dimension contribution chart + link */}
+      {hasDimensions && (
+        <>
+          <HealthScoreContributionChart results={results} />
+        </>
+      )}
+
+      {/* Score legend when dimensions are shown */}
+      {!isCompoundInterest &&
+        scalarOutputs.some((o) => o.format === 'dimensions') && (
+          <p className="results-score-legend" aria-hidden="true">
+            <span className="results-legend-item">
+              <span className="results-legend-chip results-item-chip--high">75+</span> Strong
+            </span>
+            <span className="results-legend-item">
+              <span className="results-legend-chip results-item-chip--medium">50-75</span> On track
+            </span>
+            <span className="results-legend-item">
+              <span className="results-legend-chip results-item-chip--low">25-50</span> Needs attention
+            </span>
+            <span className="results-legend-item">
+              <span className="results-legend-chip results-item-chip--critical">&lt;25</span> Critical
+            </span>
+          </p>
+        )}
 
       {/* Scalar summary table (non–compound-interest models) */}
       {!isCompoundInterest && scalarOutputs.length > 0 && (
@@ -439,10 +646,13 @@ export default function ResultsDisplay({ model, results }) {
             {scalarOutputs.map((output) => {
               const raw = results[output.id];
               if (raw === undefined || raw === null) return null;
+              const isStructured = output.format === 'dimensions' || output.format === 'actions';
               return (
                 <tr key={output.id}>
                   <td>{output.label}</td>
-                  <td className="results-value">{formatValue(raw, output.format)}</td>
+                  <td className={`results-value${isStructured ? ' results-value--structured' : ''}`}>
+                    {renderFormattedValue(raw, output.format)}
+                  </td>
                 </tr>
               );
             })}

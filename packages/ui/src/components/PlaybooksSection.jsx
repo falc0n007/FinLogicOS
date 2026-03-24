@@ -70,6 +70,13 @@ export default function PlaybooksSection() {
             key={pb.id}
             className={`playbook-card${pb.available ? '' : ' playbook-card--coming-soon'}`}
             onClick={() => pb.available && navigate(`/strategy/playbooks/${pb.id}`)}
+            onKeyDown={(e) => {
+              if (!pb.available) return;
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                navigate(`/strategy/playbooks/${pb.id}`);
+              }
+            }}
             role={pb.available ? 'button' : undefined}
             tabIndex={pb.available ? 0 : undefined}
           >

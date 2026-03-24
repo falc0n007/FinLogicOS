@@ -7,6 +7,15 @@ const DIMENSION_TO_MODELS = {
   net_worth_trajectory: ['compound-interest-growth', 'income-change-simulator'],
 };
 
+const DIMENSION_FORMULA_HINTS = {
+  emergency_fund: 'Computed from liquid assets divided by monthly essential expenses.',
+  debt_to_income: 'Computed from monthly debt payments divided by monthly income.',
+  savings_rate: 'Computed from monthly savings divided by monthly income.',
+  retirement_readiness: 'Computed from retirement balance relative to age benchmark targets.',
+  insurance_coverage: 'Computed from term life and disability coverage flags.',
+  net_worth_trajectory: 'Computed from current net worth vs prior year net worth delta.',
+};
+
 function cleanLabel(id) {
   return id.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
@@ -29,6 +38,7 @@ export default function HealthBreakdownExplorer({
   }
 
   const recommendations = DIMENSION_TO_MODELS[selectedDimensionKey] ?? [];
+  const formulaHint = DIMENSION_FORMULA_HINTS[selectedDimensionKey] ?? 'Score derived from health inputs.';
 
   return (
     <section className="health-explorer" aria-live="polite">
@@ -36,6 +46,7 @@ export default function HealthBreakdownExplorer({
       <p className="section-subtitle">
         Score {selectedDimension.score}/100 · Raw signal {String(selectedDimension.raw)}
       </p>
+      <p className="health-explorer-formula">{formulaHint}</p>
 
       <div className="health-explorer-actions">
         {recommendations.map((id) => {
