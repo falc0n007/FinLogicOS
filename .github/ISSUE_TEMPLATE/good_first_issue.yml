@@ -1,0 +1,30 @@
+name: Good First Issue
+description: Propose an approachable task suitable for new contributors.
+labels: ["good first issue"]
+body:
+  - type: textarea
+    id: task_description
+    attributes:
+      label: Task Description
+      description: Describe the task clearly. What needs to be done and why? Keep it scoped and achievable for someone new to the codebase.
+    validations:
+      required: true
+
+  - type: textarea
+    id: relevant_files
+    attributes:
+      label: Relevant Files
+      description: List the files or directories a contributor should focus on. Include package names if applicable.
+      placeholder: |
+        - packages/core/src/sandbox.js
+        - packages/cli/src/commands/run.js
+    validations:
+      required: true
+
+  - type: textarea
+    id: hints
+    attributes:
+      label: Hints
+      description: Any hints, pointers, or context that will help a new contributor get started. Link to related issues, docs, or code sections as appropriate.
+    validations:
+      required: false

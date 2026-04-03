@@ -1,29 +1,60 @@
 # FinLogicOS
 
-Your local-first operating system for financial logic.
+![CI](https://github.com/falc0n007/FinLogicOS/actions/workflows/ci.yml/badge.svg)
+![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
+
+Financial logic models — tax calculations, compound growth, debt schedules — typically run in black-box SaaS tools that have access to your data but no obligation to explain their math. FinLogicOS runs those models locally, in an auditable sandbox, using community-published packs you can read, verify, and fork.
 
 ---
 
-## Value Pillars
+## Key Features
 
-**Privacy First**
-All data stays on your machine. No telemetry, no cloud sync, no external API calls. Your financial logic and inputs never leave localhost.
-
-**Community Models**
-Install model packs built and published by the community. Each pack is a self-contained bundle of financial logic you can audit, fork, and extend.
-
-**Open Source**
-MIT licensed and fully transparent. Read every line, propose changes, or build your own distribution on top of the platform.
+- **Local execution only.** No network calls during model runs. Your inputs never leave your machine.
+- **Sandboxed model packs.** Each pack runs in an isolated context with no filesystem or network access outside the pack directory.
+- **Auditable by design.** Every model is a plain JavaScript function paired with a YAML manifest. Read the code before you trust the output.
+- **Snapshot store.** Every run is saved locally. Replay, diff, and audit any prior calculation.
+- **Community extensible.** Publish or install model packs via npm under the `finlogic-model-` prefix.
 
 ---
 
 ## Quick Start
 
+Install dependencies and run the test suite:
+
 ```bash
 npm install
 npm test
+```
+
+List available models:
+
+```bash
 npx finlogic list
+```
+
+Run a model interactively:
+
+```bash
 npx finlogic run compound-interest-growth
+```
+
+Pass inputs directly without prompting:
+
+```bash
+npx finlogic run compound-interest-growth -i principal=10000 -i rate=0.07 -i years=20
+```
+
+Save a snapshot and review it later:
+
+```bash
+npx finlogic snapshot save compound-interest-growth
+npx finlogic snapshot list
+```
+
+Validate a model pack before using or publishing it:
+
+```bash
+npx finlogic validate ./my-model-pack
 ```
 
 ---
@@ -40,6 +71,14 @@ When you run a model, FinLogicOS loads the pack into a sandboxed execution conte
 ```
 User Input -> Manifest Validation -> Sandboxed Execution -> Snapshot Storage -> Output
 ```
+
+To create a new model pack, use the scaffolding tool:
+
+```bash
+npx create-finlogic-model my-model-name
+```
+
+This generates a `manifest.yaml`, a `logic.js` pure function, a `logic.test.js` test file, and a `README.md`. Publish to npm under the `finlogic-model-` prefix so the community can discover and install it.
 
 ---
 
