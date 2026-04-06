@@ -1,0 +1,130 @@
+id: emergency-fund-target
+name: Emergency Fund Target
+version: 1.0.0
+category: health
+author: finlogicos
+
+inputs:
+  - id: monthly_essential_expenses
+    label: Monthly Essential Expenses
+    type: number
+    required: true
+    description: Average monthly required expenses (housing, food, utilities, insurance, minimum debt)
+
+  - id: income_stability
+    label: Income Stability
+    type: enum
+    values:
+      - very_stable
+      - stable
+      - variable
+      - freelance
+    required: true
+    description: Stability of your household income stream
+
+  - id: number_of_dependents
+    label: Number of Dependents
+    type: number
+    required: false
+    default: 0
+
+  - id: has_disability_insurance
+    label: Has Disability Insurance
+    type: boolean
+    required: false
+    default: false
+
+  - id: industry_volatility
+    label: Industry Volatility
+    type: enum
+    values:
+      - stable
+      - moderate
+      - volatile
+    required: false
+    default: moderate
+
+  - id: dual_income_household
+    label: Dual Income Household
+    type: boolean
+    required: false
+    default: false
+
+  - id: mortgage_or_rent_monthly
+    label: Monthly Housing Payment
+    type: number
+    required: true
+
+  - id: high_deductible_health_plan
+    label: High Deductible Health Plan
+    type: boolean
+    required: false
+    default: false
+
+  - id: hsa_balance
+    label: HSA Balance
+    type: number
+    required: false
+    default: 0
+
+  - id: current_emergency_fund
+    label: Current Emergency Fund
+    type: number
+    required: false
+    default: 0
+
+  - id: monthly_take_home_income
+    label: Monthly Take-Home Income
+    type: number
+    required: false
+    default: 0
+    description: Optional net monthly income used to build adaptive savings ladders
+
+outputs:
+  - id: target_months
+    label: Recommended Emergency Fund Target (Months)
+    type: number
+
+  - id: target_amount
+    label: Recommended Emergency Fund Target (Amount)
+    type: number
+    format: currency
+    prefix: "$"
+
+  - id: current_coverage_months
+    label: Current Coverage Months
+    type: number
+
+  - id: gap_amount
+    label: Emergency Fund Gap
+    type: number
+    format: currency
+    prefix: "$"
+
+  - id: gap_months
+    label: Coverage Gap (Months)
+    type: number
+
+  - id: savings_plan
+    label: Savings Plan Milestones
+    type: string
+
+  - id: resilience_score
+    label: Shock Resilience Score
+    type: number
+
+  - id: shock_ladder
+    label: Shock Ladder Outcomes
+    type: string
+
+  - id: adaptive_contribution_ladder
+    label: Adaptive Contribution Ladder
+    type: string
+
+  - id: target_rationale
+    label: Target Rationale
+    type: string
+
+  - id: explain
+    label: Explainability Block
+    type: string

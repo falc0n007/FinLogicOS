@@ -192,6 +192,196 @@ function debtPayoffCalculator(inputs) {
 }
 
 // ---------------------------------------------------------------------------
+// Emergency Fund Target
+// ---------------------------------------------------------------------------
+
+const UI_INCOME_STABILITY_BASE_MONTHS = {
+  very_stable: 3,
+  stable: 4,
+  variable: 5,
+  freelance: 6,
+};
+
+const UI_INDUSTRY_VOLATILITY_ADJUSTMENTS = {
+  stable: -0.5,
+  moderate: 0,
+  volatile: 1.5,
+};
+
+class EmergencyFundTargetEngine {
+  constructor(inputs) {
+    this.inputs = this.normalize(inputs);
+  }
+
+  normalize(raw) {
+    const incomeStability = String(raw.income_stability || '');
+    if (!UI_INCOME_STABILITY_BASE_MONTHS[incomeStability]) {
+      throw new Error('income_stability must be one of: very_stable, stable, variable, freelance');
+    }
+
+    const industryVolatility = String(raw.industry_volatility || 'moderate');
+    if (UI_INDUSTRY_VOLATILITY_ADJUSTMENTS[industryVolatility] == null) {
+      throw new Error('industry_volatility must be one of: stable, moderate, volatile');
+    }
+
+    return {
+      monthlyEssentialExpenses: Number(raw.monthly_essential_expenses) || 0,
+      incomeStability,
+      numberOfDependents: Number(raw.number_of_dependents || 0),
+      hasDisabilityInsurance: Boolean(raw.has_disability_insurance),
+      industryVolatility,
+      dualIncomeHousehold: Boolean(raw.dual_income_household),
+      mortgageOrRentMonthly: Number(raw.mortgage_or_rent_monthly) || 0,
+      highDeductibleHealthPlan: Boolean(raw.high_deductible_health_plan),
+      hsaBalance: Number(raw.hsa_balance || 0),
+      currentEmergencyFund: Number(raw.current_emergency_fund || 0),
+      monthlyTakeHomeIncome: Number(raw.monthly_take_home_income || 0),
+    };
+  }
+
+  targetMonths() {
+    const i = this.inputs;
+    let months = UI_INCOME_STABILITY_BASE_MONTHS[i.incomeStability];
+    months += Math.min(i.numberOfDependents * 0.5, 2);
+    if (i.dualIncomeHousehold) months *= 0.8;
+    months += UI_INDUSTRY_VOLATILITY_ADJUSTMENTS[i.industryVolatility];
+    if (i.hasDisabilityInsurance) months -= 0.5;
+    if (i.highDeductibleHealthPlan) months += 0.5;
+    return clamp(round2(months), 2.5, 12);
+  }
+
+  savingsPlan(gapAmount) {
+    const rates = [100, 300, 500];
+    const plan = {};
+    for (const rate of rates) {
+      const monthsToClose = gapAmount <= 0 ? 0 : Math.ceil(gapAmount / rate);
+      plan['monthly_' + rate] = {
+        contribution: rate,
+        months_to_close: monthsToClose,
+        years_to_close: round2(monthsToClose / 12),
+      };
+    }
+    return plan;
+  }
+
+  shockLadder(targetAmount) {
+    const i = this.inputs;
+    const medicalShock = i.highDeductibleHealthPlan ? 7000 : 2500;
+    const medicalOutOfPocket = Math.max(medicalShock - i.hsaBalance, 0);
+    const scenarios = [
+      { id: 'job_loss_3_months', label: '3-month income interruption', shock_cost: round2(i.monthlyEssentialExpenses * 3) },
+      { id: 'job_loss_6_months', label: '6-month income interruption', shock_cost: round2(i.monthlyEssentialExpenses * 6) },
+      { id: 'income_plus_medical', label: '3-month interruption + medical shock', shock_cost: round2(i.monthlyEssentialExpenses * 3 + medicalOutOfPocket) },
+      { id: 'family_dependency_shock', label: '2-month interruption + dependent shock buffer', shock_cost: round2(i.monthlyEssentialExpenses * 2 + (i.monthlyEssentialExpenses * 0.25 * i.numberOfDependents)) },
+    ];
+
+    const ladder = scenarios.map((scenario) => {
+      const postShockBalance = round2(i.currentEmergencyFund - scenario.shock_cost);
+      return {
+        ...scenario,
+        covered: postShockBalance >= 0,
+        post_shock_balance: postShockBalance,
+        months_remaining: i.monthlyEssentialExpenses > 0 ? round2(Math.max(postShockBalance, 0) / i.monthlyEssentialExpenses) : 0,
+        refill_to_target: round2(Math.max(targetAmount - Math.max(postShockBalance, 0), 0)),
+      };
+    });
+
+    const coveredCount = ladder.filter((item) => item.covered).length;
+    const resilienceScore = round2((coveredCount / ladder.length) * 100);
+
+    return { ladder, resilienceScore };
+  }
+
+  adaptiveContributionLadder(gapAmount, targetMonths) {
+    const i = this.inputs;
+    const income = Number(i.monthlyTakeHomeIncome || 0);
+    const rates = [
+      { id: 'starter', pct: 0.05 },
+      { id: 'sustain', pct: 0.10 },
+      { id: 'accelerate', pct: 0.15 },
+    ];
+
+    return rates.map((rate) => {
+      const monthlyContribution = income > 0
+        ? round2(income * rate.pct)
+        : round2(i.monthlyEssentialExpenses * rate.pct);
+      const monthsToTarget = gapAmount <= 0 || monthlyContribution <= 0 ? 0 : Math.ceil(gapAmount / monthlyContribution);
+      return {
+        id: rate.id,
+        savings_rate: rate.pct,
+        monthly_contribution: monthlyContribution,
+        months_to_target: monthsToTarget,
+        years_to_target: round2(monthsToTarget / 12),
+        projected_coverage_gain_per_months_saved: targetMonths > 0 && i.monthlyEssentialExpenses > 0
+          ? round2(monthlyContribution / i.monthlyEssentialExpenses)
+          : 0,
+      };
+    });
+  }
+
+  explain(targetMonths, targetAmount) {
+    const i = this.inputs;
+    return {
+      drivers: [
+        { rank: 1, id: 'income_stability', value: i.incomeStability },
+        { rank: 2, id: 'number_of_dependents', value: i.numberOfDependents },
+        { rank: 3, id: 'dual_income_household', value: i.dualIncomeHousehold },
+      ],
+      sensitivity: `If you got disability insurance, your target would decrease by 0.5 months ($${round2(i.monthlyEssentialExpenses * 0.5).toFixed(2)}).`,
+      caveats: [
+        'This is a planning guideline, not a guarantee of financial security.',
+        'Target should be revisited when life circumstances change.',
+      ],
+      assumptions: {
+        baseMonthsByIncomeStability: UI_INCOME_STABILITY_BASE_MONTHS,
+        dependentsAdjustmentPerDependent: 0.5,
+        dependentsAdjustmentCap: 2,
+        dualIncomeMultiplier: 0.8,
+        industryVolatilityAdjustments: UI_INDUSTRY_VOLATILITY_ADJUSTMENTS,
+        disabilityInsuranceAdjustment: -0.5,
+        highDeductibleHealthPlanAdjustment: 0.5,
+        targetClampMinMonths: 2.5,
+        targetClampMaxMonths: 12,
+      },
+      computed: {
+        target_months: targetMonths,
+        target_amount: targetAmount,
+      },
+    };
+  }
+
+  run() {
+    const i = this.inputs;
+    const targetMonths = this.targetMonths();
+    const targetAmount = round2(targetMonths * i.monthlyEssentialExpenses);
+    const currentCoverageMonths = i.monthlyEssentialExpenses > 0
+      ? round2(i.currentEmergencyFund / i.monthlyEssentialExpenses)
+      : 0;
+    const gapAmount = Math.max(round2(targetAmount - i.currentEmergencyFund), 0);
+    const gapMonths = Math.max(round2(targetMonths - currentCoverageMonths), 0);
+    const shockLadder = this.shockLadder(targetAmount);
+
+    return {
+      target_months: targetMonths,
+      target_amount: targetAmount,
+      current_coverage_months: currentCoverageMonths,
+      gap_amount: gapAmount,
+      gap_months: gapMonths,
+      savings_plan: this.savingsPlan(gapAmount),
+      resilience_score: shockLadder.resilienceScore,
+      shock_ladder: shockLadder.ladder,
+      adaptive_contribution_ladder: this.adaptiveContributionLadder(gapAmount, targetMonths),
+      target_rationale: `Recommended reserve is ${targetMonths} months ($${targetAmount.toFixed(2)}) based on your income stability (${i.incomeStability}), dependents (${i.numberOfDependents}), household structure, and risk settings.`,
+      explain: this.explain(targetMonths, targetAmount),
+    };
+  }
+}
+
+function emergencyFundTarget(inputs) {
+  return new EmergencyFundTargetEngine(inputs).run();
+}
+
+// ---------------------------------------------------------------------------
 // Shared utilities
 // ---------------------------------------------------------------------------
 
@@ -1047,6 +1237,42 @@ export const MODELS = [
       { id: 'dimensions',  label: 'Dimensions',   format: 'dimensions' },
     ],
     run: financialHealthScore,
+  },
+
+  {
+    id: 'emergency-fund-target',
+    name: 'Emergency Fund Target',
+    version: '1.0.0',
+    category: 'health',
+    description:
+      'Builds a dynamic emergency-fund target using income stability, dependents, household structure, and risk factors instead of a one-size-fits-all rule.',
+    inputs: [
+      { id: 'monthly_essential_expenses', label: 'Monthly Essential Expenses', type: 'number', required: true, placeholder: '4000' },
+      { id: 'income_stability', label: 'Income Stability', type: 'enum', values: ['very_stable', 'stable', 'variable', 'freelance'], required: true, default: 'stable' },
+      { id: 'number_of_dependents', label: 'Number of Dependents', type: 'number', required: false, default: 0, placeholder: '0' },
+      { id: 'has_disability_insurance', label: 'Has Disability Insurance?', type: 'boolean', required: false, default: false },
+      { id: 'industry_volatility', label: 'Industry Volatility', type: 'enum', values: ['stable', 'moderate', 'volatile'], required: false, default: 'moderate' },
+      { id: 'dual_income_household', label: 'Dual Income Household?', type: 'boolean', required: false, default: false },
+      { id: 'mortgage_or_rent_monthly', label: 'Monthly Housing Payment', type: 'number', required: true, placeholder: '1800' },
+      { id: 'high_deductible_health_plan', label: 'High Deductible Health Plan?', type: 'boolean', required: false, default: false },
+      { id: 'hsa_balance', label: 'HSA Balance', type: 'number', required: false, default: 0, placeholder: '0' },
+      { id: 'current_emergency_fund', label: 'Current Emergency Fund', type: 'number', required: false, default: 0, placeholder: '5000' },
+      { id: 'monthly_take_home_income', label: 'Monthly Take-Home Income (Optional)', type: 'number', required: false, default: 0, placeholder: '7000' },
+    ],
+    outputs: [
+      { id: 'target_months', label: 'Recommended Months', format: 'number' },
+      { id: 'target_amount', label: 'Target Amount', format: 'currency' },
+      { id: 'current_coverage_months', label: 'Current Coverage (Months)', format: 'number' },
+      { id: 'gap_amount', label: 'Gap Amount', format: 'currency' },
+      { id: 'gap_months', label: 'Gap (Months)', format: 'number' },
+      { id: 'savings_plan', label: 'Savings Plan', format: 'text' },
+      { id: 'resilience_score', label: 'Resilience Score', format: 'number' },
+      { id: 'shock_ladder', label: 'Shock Ladder', format: 'text' },
+      { id: 'adaptive_contribution_ladder', label: 'Adaptive Contribution Ladder', format: 'text' },
+      { id: 'target_rationale', label: 'Rationale', format: 'text' },
+      { id: 'explain', label: 'Explainability', format: 'text' },
+    ],
+    run: emergencyFundTarget,
   },
 
   {

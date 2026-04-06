@@ -1,0 +1,15 @@
+{
+  "name": "@finlogicos/model-emergency-fund-target",
+  "version": "1.0.0",
+  "description": "Emergency Fund Target model for FinLogicOS",
+  "main": "logic.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
