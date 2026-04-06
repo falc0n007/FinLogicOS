@@ -73,6 +73,13 @@ inputs:
     required: false
     default: 0
 
+  - id: monthly_take_home_income
+    label: Monthly Take-Home Income
+    type: number
+    required: false
+    default: 0
+    description: Optional net monthly income used to build adaptive savings ladders
+
 outputs:
   - id: target_months
     label: Recommended Emergency Fund Target (Months)
@@ -100,6 +107,18 @@ outputs:
 
   - id: savings_plan
     label: Savings Plan Milestones
+    type: string
+
+  - id: resilience_score
+    label: Shock Resilience Score
+    type: number
+
+  - id: shock_ladder
+    label: Shock Ladder Outcomes
+    type: string
+
+  - id: adaptive_contribution_ladder
+    label: Adaptive Contribution Ladder
     type: string
 
   - id: target_rationale

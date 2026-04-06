@@ -123,4 +123,45 @@ describe('emergency-fund-target', () => {
     expect(first.explain.caveats.length).toBeGreaterThan(0);
     expect(first).toEqual(second);
   });
+
+  test('shock ladder and resilience score are present and bounded', () => {
+    const result = calculate({
+      monthly_essential_expenses: 3500,
+      income_stability: 'stable',
+      number_of_dependents: 1,
+      industry_volatility: 'moderate',
+      dual_income_household: false,
+      mortgage_or_rent_monthly: 1700,
+      has_disability_insurance: false,
+      high_deductible_health_plan: true,
+      hsa_balance: 1000,
+      current_emergency_fund: 12000,
+    });
+
+    expect(result.shock_ladder).toHaveLength(4);
+    expect(result.resilience_score).toBeGreaterThanOrEqual(0);
+    expect(result.resilience_score).toBeLessThanOrEqual(100);
+    expect(result.shock_ladder[0]).toHaveProperty('covered');
+    expect(result.shock_ladder[0]).toHaveProperty('refill_to_target');
+  });
+
+  test('adaptive contribution ladder uses monthly take-home income when provided', () => {
+    const result = calculate({
+      monthly_essential_expenses: 4000,
+      income_stability: 'variable',
+      number_of_dependents: 0,
+      industry_volatility: 'moderate',
+      dual_income_household: false,
+      mortgage_or_rent_monthly: 1800,
+      has_disability_insurance: false,
+      high_deductible_health_plan: false,
+      current_emergency_fund: 2000,
+      monthly_take_home_income: 8000,
+    });
+
+    expect(result.adaptive_contribution_ladder).toHaveLength(3);
+    expect(result.adaptive_contribution_ladder[0].monthly_contribution).toBe(400);
+    expect(result.adaptive_contribution_ladder[1].monthly_contribution).toBe(800);
+    expect(result.adaptive_contribution_ladder[2].monthly_contribution).toBe(1200);
+  });
 });

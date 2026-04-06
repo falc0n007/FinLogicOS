@@ -43,6 +43,7 @@ class EmergencyFundTargetCalculator {
       highDeductibleHealthPlan: Boolean(rawInputs.high_deductible_health_plan),
       hsaBalance: this.optionalNonNegativeNumber(rawInputs.hsa_balance, 0),
       currentEmergencyFund: this.optionalNonNegativeNumber(rawInputs.current_emergency_fund, 0),
+      monthlyTakeHomeIncome: this.optionalNonNegativeNumber(rawInputs.monthly_take_home_income, 0),
     };
   }
 
@@ -140,6 +141,90 @@ class EmergencyFundTargetCalculator {
     return plan;
   }
 
+  buildShockLadder(targetAmount) {
+    const i = this.inputs;
+    const monthlyEssentials = i.monthlyEssentialExpenses;
+    const currentFund = i.currentEmergencyFund;
+    const medicalShock = i.highDeductibleHealthPlan ? 7000 : 2500;
+    const medicalOutOfPocket = Math.max(medicalShock - i.hsaBalance, 0);
+
+    const scenarios = [
+      {
+        id: 'job_loss_3_months',
+        label: '3-month income interruption',
+        shock_cost: round2(monthlyEssentials * 3),
+      },
+      {
+        id: 'job_loss_6_months',
+        label: '6-month income interruption',
+        shock_cost: round2(monthlyEssentials * 6),
+      },
+      {
+        id: 'income_plus_medical',
+        label: '3-month interruption + medical shock',
+        shock_cost: round2(monthlyEssentials * 3 + medicalOutOfPocket),
+      },
+      {
+        id: 'family_dependency_shock',
+        label: '2-month interruption + dependent shock buffer',
+        shock_cost: round2(monthlyEssentials * 2 + (monthlyEssentials * 0.25 * i.numberOfDependents)),
+      },
+    ];
+
+    const ladder = scenarios.map((scenario) => {
+      const postShockBalance = round2(currentFund - scenario.shock_cost);
+      const covered = postShockBalance >= 0;
+      const monthsRemaining = monthlyEssentials > 0
+        ? round2(Math.max(postShockBalance, 0) / monthlyEssentials)
+        : 0;
+      const refillToTarget = round2(Math.max(targetAmount - Math.max(postShockBalance, 0), 0));
+
+      return {
+        id: scenario.id,
+        label: scenario.label,
+        shock_cost: scenario.shock_cost,
+        covered,
+        post_shock_balance: postShockBalance,
+        months_remaining: monthsRemaining,
+        refill_to_target: refillToTarget,
+      };
+    });
+
+    const coveredCount = ladder.filter((item) => item.covered).length;
+    const resilienceScore = round2((coveredCount / ladder.length) * 100);
+
+    return { ladder, resilienceScore };
+  }
+
+  buildAdaptiveContributionLadder(gapAmount, targetMonths) {
+    const i = this.inputs;
+    const income = i.monthlyTakeHomeIncome;
+    const rates = [
+      { id: 'starter', pct: 0.05 },
+      { id: 'sustain', pct: 0.10 },
+      { id: 'accelerate', pct: 0.15 },
+    ];
+
+    return rates.map((rate) => {
+      const monthlyContribution = income > 0
+        ? round2(income * rate.pct)
+        : round2((i.monthlyEssentialExpenses || 0) * rate.pct);
+      const monthsToTarget = gapAmount <= 0 || monthlyContribution <= 0
+        ? 0
+        : Math.ceil(gapAmount / monthlyContribution);
+      return {
+        id: rate.id,
+        savings_rate: rate.pct,
+        monthly_contribution: monthlyContribution,
+        months_to_target: monthsToTarget,
+        years_to_target: round2(monthsToTarget / 12),
+        projected_coverage_gain_per_months_saved: targetMonths > 0 && i.monthlyEssentialExpenses > 0
+          ? round2(monthlyContribution / i.monthlyEssentialExpenses)
+          : 0,
+      };
+    });
+  }
+
   buildRationale(targetMonths, targetAmount, currentCoverageMonths) {
     const i = this.inputs;
 
@@ -223,6 +308,7 @@ class EmergencyFundTargetCalculator {
 
     const gapAmount = Math.max(round2(targetAmount - i.currentEmergencyFund), 0);
     const gapMonths = Math.max(round2(targetMonths - currentCoverageMonths), 0);
+    const shockLadderResult = this.buildShockLadder(targetAmount);
 
     return {
       target_months: targetMonths,
@@ -231,6 +317,9 @@ class EmergencyFundTargetCalculator {
       gap_amount: gapAmount,
       gap_months: gapMonths,
       savings_plan: this.buildSavingsPlan(gapAmount),
+      resilience_score: shockLadderResult.resilienceScore,
+      shock_ladder: shockLadderResult.ladder,
+      adaptive_contribution_ladder: this.buildAdaptiveContributionLadder(gapAmount, targetMonths),
       target_rationale: this.buildRationale(targetMonths, targetAmount, currentCoverageMonths),
       explain: this.buildExplainability(targetMonths, targetAmount),
     };

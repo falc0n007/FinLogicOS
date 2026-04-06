@@ -45,6 +45,9 @@ Common guidance often starts with a baseline emergency reserve and then suggests
 - `gap_amount`
 - `gap_months`
 - `savings_plan`
+- `resilience_score`
+- `shock_ladder`
+- `adaptive_contribution_ladder`
 - `target_rationale`
 - `explain`
 
@@ -55,6 +58,14 @@ Common guidance often starts with a baseline emergency reserve and then suggests
 Baseline target starts from income stability, then applies additive and multiplicative adjustments for household and risk context. Final target is clamped to `[2.5, 12]` months.
 
 Savings milestones are shown for $100, $300, and $500 monthly contributions.
+
+### Unique capability: shock ladder + adaptive contribution ladder
+
+Most emergency-fund calculators stop at a static target. This model additionally:
+
+- stress-tests your current fund against multiple shock scenarios (3-month and 6-month job loss, income + medical shock, and dependent shock),
+- computes a **resilience score** (how many shock scenarios you can absorb today), and
+- generates an **adaptive contribution ladder** (starter/sustain/accelerate monthly savings tracks based on your income profile).
 
 ---
 

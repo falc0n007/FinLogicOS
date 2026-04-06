@@ -235,6 +235,7 @@ class EmergencyFundTargetEngine {
       highDeductibleHealthPlan: Boolean(raw.high_deductible_health_plan),
       hsaBalance: Number(raw.hsa_balance || 0),
       currentEmergencyFund: Number(raw.current_emergency_fund || 0),
+      monthlyTakeHomeIncome: Number(raw.monthly_take_home_income || 0),
     };
   }
 
@@ -261,6 +262,61 @@ class EmergencyFundTargetEngine {
       };
     }
     return plan;
+  }
+
+  shockLadder(targetAmount) {
+    const i = this.inputs;
+    const medicalShock = i.highDeductibleHealthPlan ? 7000 : 2500;
+    const medicalOutOfPocket = Math.max(medicalShock - i.hsaBalance, 0);
+    const scenarios = [
+      { id: 'job_loss_3_months', label: '3-month income interruption', shock_cost: round2(i.monthlyEssentialExpenses * 3) },
+      { id: 'job_loss_6_months', label: '6-month income interruption', shock_cost: round2(i.monthlyEssentialExpenses * 6) },
+      { id: 'income_plus_medical', label: '3-month interruption + medical shock', shock_cost: round2(i.monthlyEssentialExpenses * 3 + medicalOutOfPocket) },
+      { id: 'family_dependency_shock', label: '2-month interruption + dependent shock buffer', shock_cost: round2(i.monthlyEssentialExpenses * 2 + (i.monthlyEssentialExpenses * 0.25 * i.numberOfDependents)) },
+    ];
+
+    const ladder = scenarios.map((scenario) => {
+      const postShockBalance = round2(i.currentEmergencyFund - scenario.shock_cost);
+      return {
+        ...scenario,
+        covered: postShockBalance >= 0,
+        post_shock_balance: postShockBalance,
+        months_remaining: i.monthlyEssentialExpenses > 0 ? round2(Math.max(postShockBalance, 0) / i.monthlyEssentialExpenses) : 0,
+        refill_to_target: round2(Math.max(targetAmount - Math.max(postShockBalance, 0), 0)),
+      };
+    });
+
+    const coveredCount = ladder.filter((item) => item.covered).length;
+    const resilienceScore = round2((coveredCount / ladder.length) * 100);
+
+    return { ladder, resilienceScore };
+  }
+
+  adaptiveContributionLadder(gapAmount, targetMonths) {
+    const i = this.inputs;
+    const income = Number(i.monthlyTakeHomeIncome || 0);
+    const rates = [
+      { id: 'starter', pct: 0.05 },
+      { id: 'sustain', pct: 0.10 },
+      { id: 'accelerate', pct: 0.15 },
+    ];
+
+    return rates.map((rate) => {
+      const monthlyContribution = income > 0
+        ? round2(income * rate.pct)
+        : round2(i.monthlyEssentialExpenses * rate.pct);
+      const monthsToTarget = gapAmount <= 0 || monthlyContribution <= 0 ? 0 : Math.ceil(gapAmount / monthlyContribution);
+      return {
+        id: rate.id,
+        savings_rate: rate.pct,
+        monthly_contribution: monthlyContribution,
+        months_to_target: monthsToTarget,
+        years_to_target: round2(monthsToTarget / 12),
+        projected_coverage_gain_per_months_saved: targetMonths > 0 && i.monthlyEssentialExpenses > 0
+          ? round2(monthlyContribution / i.monthlyEssentialExpenses)
+          : 0,
+      };
+    });
   }
 
   explain(targetMonths, targetAmount) {
@@ -303,6 +359,7 @@ class EmergencyFundTargetEngine {
       : 0;
     const gapAmount = Math.max(round2(targetAmount - i.currentEmergencyFund), 0);
     const gapMonths = Math.max(round2(targetMonths - currentCoverageMonths), 0);
+    const shockLadder = this.shockLadder(targetAmount);
 
     return {
       target_months: targetMonths,
@@ -311,6 +368,9 @@ class EmergencyFundTargetEngine {
       gap_amount: gapAmount,
       gap_months: gapMonths,
       savings_plan: this.savingsPlan(gapAmount),
+      resilience_score: shockLadder.resilienceScore,
+      shock_ladder: shockLadder.ladder,
+      adaptive_contribution_ladder: this.adaptiveContributionLadder(gapAmount, targetMonths),
       target_rationale: `Recommended reserve is ${targetMonths} months ($${targetAmount.toFixed(2)}) based on your income stability (${i.incomeStability}), dependents (${i.numberOfDependents}), household structure, and risk settings.`,
       explain: this.explain(targetMonths, targetAmount),
     };
@@ -1197,6 +1257,7 @@ export const MODELS = [
       { id: 'high_deductible_health_plan', label: 'High Deductible Health Plan?', type: 'boolean', required: false, default: false },
       { id: 'hsa_balance', label: 'HSA Balance', type: 'number', required: false, default: 0, placeholder: '0' },
       { id: 'current_emergency_fund', label: 'Current Emergency Fund', type: 'number', required: false, default: 0, placeholder: '5000' },
+      { id: 'monthly_take_home_income', label: 'Monthly Take-Home Income (Optional)', type: 'number', required: false, default: 0, placeholder: '7000' },
     ],
     outputs: [
       { id: 'target_months', label: 'Recommended Months', format: 'number' },
@@ -1205,6 +1266,9 @@ export const MODELS = [
       { id: 'gap_amount', label: 'Gap Amount', format: 'currency' },
       { id: 'gap_months', label: 'Gap (Months)', format: 'number' },
       { id: 'savings_plan', label: 'Savings Plan', format: 'text' },
+      { id: 'resilience_score', label: 'Resilience Score', format: 'number' },
+      { id: 'shock_ladder', label: 'Shock Ladder', format: 'text' },
+      { id: 'adaptive_contribution_ladder', label: 'Adaptive Contribution Ladder', format: 'text' },
       { id: 'target_rationale', label: 'Rationale', format: 'text' },
       { id: 'explain', label: 'Explainability', format: 'text' },
     ],
